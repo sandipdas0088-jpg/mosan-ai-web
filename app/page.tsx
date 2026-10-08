@@ -146,102 +146,214 @@ const handleUpgrade = async () => {
   }
 
   try {
-    const response = await fetch(
-      "https://mosan-ai-backend.onrender.com/api/create-subscription",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    // =========================================================
+    // GET CURRENT SUPABASE USER
+    // =========================================================
 
-    const data = await response.json();
-
-    if (!data.success) {
-      alert(data.message || "Could not create subscription.");
-      return;
-    }
-    if (!(window as any).Razorpay) {
-  const script = document.createElement("script");
-  script.src = "https://checkout.razorpay.com/v1/checkout.js";
-  script.async = true;
-
-  await new Promise<void>((resolve, reject) => {
-    script.onload = () => resolve();
-    script.onerror = () =>
-      reject(new Error("Razorpay Checkout failed to load."));
-    document.body.appendChild(script);
-  });
-}
-    if (!(window as any).Razorpay) {
-      alert("Razorpay Checkout is not loaded. Please refresh the page.");
-      return;
-    }
-
-    const options = {
-      key: data.key_id,
-      subscription_id: data.subscription_id,
-
-      name: "Mosan AI",
-      description: "Mosan AI Pro Plan - ₹199/month",
-
-      handler: async function (response: any) {
-  try {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const verifyResponse = await fetch(
-      "https://mosan-ai-backend.onrender.com/api/verify-subscription",
+    if (!user?.id) {
+      alert("Please login again before upgrading to Pro.");
+      return;
+    }
+
+    // =========================================================
+    // CREATE ONE-TIME PRO ORDER
+    // FIRST PURCHASE = ₹1
+    // RENEWAL = ₹199
+    // NO AUTOMATIC RECURRING PAYMENT
+    // =========================================================
+
+    const response = await fetch(
+      "https://mosan-ai-backend.onrender.com/api/create-pro-order",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_subscription_id:
-            response.razorpay_subscription_id,
-          razorpay_signature: response.razorpay_signature,
-          user_id: user?.id,
+          user_id: user.id,
         }),
       }
     );
 
-    const verifyData = await verifyResponse.json();
-    console.log("VERIFY SUBSCRIPTION RESPONSE:", verifyData);
+    const data = await response.json();
 
-    if (verifyData.success) {
-      alert("🎉 Pro subscription activated successfully!");
+    console.log("CREATE PRO ORDER RESPONSE:", data);
 
-      window.location.reload();
-    } else {
+    if (!response.ok || !data.success) {
       alert(
-        "Payment successful, but subscription verification failed."
+        data.message ||
+          "Could not create the Pro payment order."
       );
+      return;
     }
-  } catch (error) {
-    console.error("Subscription verification error:", error);
 
-    alert(
-      "Payment successful, but subscription activation failed. Please contact support."
-    );
-  }
-},
-      
+    // =========================================================
+    // LOAD RAZORPAY CHECKOUT
+    // =========================================================
+
+    if (!(window as any).Razorpay) {
+      const script = document.createElement("script");
+
+      script.src =
+        "https://checkout.razorpay.com/v1/checkout.js";
+
+      script.async = true;
+
+      await new Promise<void>((resolve, reject) => {
+        script.onload = () => resolve();
+
+        script.onerror = () =>
+          reject(
+            new Error(
+              "Razorpay Checkout failed to load."
+            )
+          );
+
+        document.body.appendChild(script);
+      });
+    }
+
+    if (!(window as any).Razorpay) {
+      alert(
+        "Razorpay Checkout is not loaded. Please refresh the page."
+      );
+      return;
+    }
+
+    // =========================================================
+    // PAYMENT TYPE
+    // =========================================================
+
+    const isLaunchOffer =
+      data.payment_type === "launch";
+
+    const description = isLaunchOffer
+      ? "Mosan AI Pro - ₹1 Launch Offer (30 Days)"
+      : "Mosan AI Pro - ₹199 Manual Renewal (30 Days)";
+
+    // =========================================================
+    // RAZORPAY CHECKOUT OPTIONS
+    // =========================================================
+
+    const options = {
+      key: data.key_id,
+
+      amount: data.amount,
+
+      currency: data.currency,
+
+      order_id: data.order_id,
+
+      name: "Mosan AI",
+
+      description: description,
+
+      prefill: {
+        email: user.email || userEmail,
+      },
+
+      notes: {
+        product: "Mosan AI Pro",
+        payment_type: data.payment_type,
+      },
 
       theme: {
         color: "#06b6d4",
       },
+
+      handler: async function (paymentResponse: any) {
+        try {
+          // =====================================================
+          // VERIFY ONE-TIME PAYMENT ON BACKEND
+          // =====================================================
+
+          const verifyResponse = await fetch(
+            "https://mosan-ai-backend.onrender.com/api/verify-pro-payment",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                razorpay_payment_id:
+                  paymentResponse.razorpay_payment_id,
+
+                razorpay_order_id:
+                  paymentResponse.razorpay_order_id,
+
+                razorpay_signature:
+                  paymentResponse.razorpay_signature,
+
+                user_id: user.id,
+              }),
+            }
+          );
+
+          const verifyData =
+            await verifyResponse.json();
+
+          console.log(
+            "VERIFY PRO PAYMENT RESPONSE:",
+            verifyData
+          );
+
+          // =====================================================
+          // SUCCESS
+          // =====================================================
+
+          if (
+            verifyResponse.ok &&
+            verifyData.success
+          ) {
+            alert(
+              isLaunchOffer
+                ? "🎉 Pro activated successfully for 30 days!"
+                : "🎉 Pro renewed successfully for another 30 days!"
+            );
+
+            window.location.reload();
+            return;
+          }
+
+          // =====================================================
+          // VERIFICATION FAILED
+          // =====================================================
+
+          alert(
+            verifyData.message ||
+              "Payment successful, but Pro activation failed. Please contact support."
+          );
+        } catch (error) {
+          console.error(
+            "Pro payment verification error:",
+            error
+          );
+
+          alert(
+            "Payment successful, but Pro activation failed. Please contact support."
+          );
+        }
+      },
     };
 
-    const razorpay = new (window as any).Razorpay(options);
+    // =========================================================
+    // OPEN RAZORPAY CHECKOUT
+    // =========================================================
+
+    const razorpay =
+      new (window as any).Razorpay(options);
 
     razorpay.on(
       "payment.failed",
       function (response: any) {
-        console.error("Razorpay payment failed:", response);
+        console.error(
+          "Razorpay payment failed:",
+          response
+        );
 
         alert(
           response?.error?.description ||
@@ -252,10 +364,15 @@ const handleUpgrade = async () => {
 
     razorpay.open();
   } catch (error) {
-    console.error("Upgrade error:", error);
+    console.error(
+      "Upgrade error:",
+      error
+    );
 
     alert(
-      "Could not connect to the payment server. Please make sure the backend is running."
+      error instanceof Error
+        ? error.message
+        : "Could not connect to the payment server. Please try again."
     );
   }
 };
@@ -281,14 +398,26 @@ const handleUpgrade = async () => {
 // CHECK PRO / FREE PLAN
 // ---------------------------------------------------------
 
+// ---------------------------------------------------------
+// CHECK PRO / FREE PLAN + EXPIRY
+// ---------------------------------------------------------
+
 let isProUser = false;
 
 try {
+  const currentUser = await supabase.auth.getUser();
+  const currentUserId = currentUser.data.user?.id;
+
+  if (!currentUserId) {
+    setError("User session not found. Please login again.");
+    return;
+  }
+
   const { data: subscription, error: subscriptionError } =
     await supabase
       .from("subscriptions")
-      .select("status, plan")
-      .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
+      .select("status, plan, expires_at, auto_renew")
+      .eq("user_id", currentUserId)
       .maybeSingle();
 
   if (subscriptionError) {
@@ -297,9 +426,53 @@ try {
       subscriptionError
     );
   } else {
-    isProUser =
+    // -------------------------------------------------------
+    // PRO IS ACTIVE ONLY WHEN:
+    // 1. status = active
+    // 2. plan = pro
+    // 3. expires_at is either missing (old record)
+    //    OR expires_at is still in the future
+    // -------------------------------------------------------
+
+    if (
       subscription?.status === "active" &&
-      subscription?.plan === "pro";
+      subscription?.plan === "pro"
+    ) {
+      if (subscription.expires_at) {
+        const expiryTime = new Date(
+          subscription.expires_at
+        ).getTime();
+
+        const currentTime = Date.now();
+
+        isProUser = expiryTime > currentTime;
+      } else {
+        // Existing old Pro account without expiry date
+        isProUser = true;
+      }
+    }
+  }
+
+  // -------------------------------------------------------
+  // EXPIRED PRO USER
+  // -------------------------------------------------------
+
+  if (
+    subscription?.status === "active" &&
+    subscription?.plan === "pro" &&
+    subscription?.expires_at
+  ) {
+    const expiryTime = new Date(
+      subscription.expires_at
+    ).getTime();
+
+    if (expiryTime <= Date.now()) {
+      console.log(
+        "Mosan AI Pro subscription has expired."
+      );
+
+      isProUser = false;
+    }
   }
 
   // -------------------------------------------------------
@@ -343,7 +516,6 @@ try {
   }
 
 } catch (error) {
-
   console.error(
     "Subscription / generation check failed:",
     error
@@ -354,9 +526,7 @@ try {
   );
 
   return;
-}
-
-    // ---------------------------------------------------------
+}    // ---------------------------------------------------------
     // START LOADING
     // ---------------------------------------------------------
 
