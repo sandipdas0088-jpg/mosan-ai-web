@@ -1372,7 +1372,7 @@ const deletePrompt = async (promptId: string) => {
           <MiniFeature
             icon="💳"
             title="Pro Plan"
-            description="Upgrade to the ₹199 monthly Pro plan when payment is connected."
+description="Get 30 days of Pro access and renew manually at ₹199 when your plan expires."
           />
 
         </div>
@@ -1448,12 +1448,13 @@ const deletePrompt = async (promptId: string) => {
 
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+                    <div className="grid gap-6 md:grid-cols-3">
 
-            {/* FREE PLAN */}
+            {/* =====================================================
+                FREE PLAN
+            ====================================================== */}
 
             <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8">
-
               <h3 className="text-xl font-bold">
                 Free
               </h3>
@@ -1467,7 +1468,6 @@ const deletePrompt = async (promptId: string) => {
               </p>
 
               <ul className="mt-8 space-y-4 text-sm text-gray-300">
-
                 <li>
                   ✓ 3 generations per day
                 </li>
@@ -1483,7 +1483,6 @@ const deletePrompt = async (promptId: string) => {
                 <li>
                   ✓ Android app access
                 </li>
-
               </ul>
 
               <button
@@ -1492,43 +1491,39 @@ const deletePrompt = async (promptId: string) => {
               >
                 Current Plan
               </button>
-
             </div>
 
-            {/* PRO PLAN */}
 
-            <div className="rounded-3xl border border-cyan-400/30 bg-cyan-400/5 p-8">
+            {/* =====================================================
+                PRO PLAN
+            ====================================================== */}
 
+            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8">
               <div className="flex items-center justify-between">
-
                 <h3 className="text-xl font-bold">
                   Pro
                 </h3>
 
-                <span className="rounded-full bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-300">
-                  POPULAR
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-gray-300">
+                  STANDARD
                 </span>
-
               </div>
 
               <div className="mt-4 text-4xl font-extrabold">
-
                 ₹199
 
                 <span className="text-base font-normal text-gray-400">
                   /month
                 </span>
-
               </div>
 
               <p className="mt-2 text-gray-400">
-                For regular AI creators
+                Standard Pro renewal price
               </p>
 
               <ul className="mt-8 space-y-4 text-sm text-gray-300">
-
                 <li>
-                  ✓ Higher generation limits
+                  ✓ Unlimited prompt generation
                 </li>
 
                 <li>
@@ -1543,21 +1538,95 @@ const deletePrompt = async (promptId: string) => {
                   ✓ Same account everywhere
                 </li>
 
+                <li>
+                  ✓ Manual renewal
+                </li>
+              </ul>
+
+              <div className="mt-8 w-full rounded-xl border border-white/10 py-3 text-center text-sm font-medium text-gray-400">
+                Standard Price: ₹199 / 30 Days
+              </div>
+            </div>
+
+
+            {/* =====================================================
+                LIMITED TIME OFFER
+            ====================================================== */}
+
+            <div className="rounded-3xl border border-cyan-400/40 bg-cyan-400/10 p-8 shadow-xl shadow-cyan-500/10">
+
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-xl font-bold text-white">
+                  Limited Time Offer
+                </h3>
+
+                <span className="rounded-full bg-cyan-400 px-3 py-1 text-xs font-bold text-black">
+                  LAUNCH OFFER
+                </span>
+              </div>
+
+              <div className="mt-5">
+                <div className="text-sm text-gray-500 line-through">
+                  ₹199 / 30 Days
+                </div>
+
+                <div className="mt-1 text-5xl font-extrabold text-cyan-300">
+                  ₹1
+                </div>
+
+                <div className="mt-2 text-sm font-medium text-gray-300">
+                  for the first 30 days
+                </div>
+              </div>
+
+              <p className="mt-4 text-sm leading-6 text-gray-300">
+                Get Mosan AI Pro for just ₹1 for your first 30 days.
+              </p>
+
+              <ul className="mt-8 space-y-4 text-sm text-gray-200">
+                <li>
+                  ✓ Unlimited prompt generation
+                </li>
+
+                <li>
+                  ✓ Advanced prompts
+                </li>
+
+                <li>
+                  ✓ Website + Android app
+                </li>
+
+                <li>title="What is the Pro price?"
+description="The standard Pro renewal price is ₹199 for 30 days. The current launch offer gives new users their first 30 days for ₹1 with no automatic renewal."
+                  ✓ Same account everywhere
+                </li>
+
+                <li>
+                  ✓ No automatic renewal
+                </li>
+
+                <li>
+                  ✓ Renew manually at ₹199
+                </li>
               </ul>
 
               <button
-  onClick={() => {
-    if (!userEmail) {
-      setShowAuthModal(true);
-      return;
-    }
+                onClick={() => {
+                  if (!userEmail) {
+                    setShowAuthModal(true);
+                    return;
+                  }
 
-    handleUpgrade();
-  }}
-  className="mt-8 w-full rounded-xl bg-cyan-500 py-3 font-bold text-black transition hover:bg-cyan-400"
->
-  Upgrade to Pro
-</button>
+                  handleUpgrade();
+                }}
+                className="mt-8 w-full rounded-xl bg-cyan-500 py-3.5 font-bold text-black transition hover:bg-cyan-400"
+              >
+                Get Launch Offer — ₹1
+              </button>
+
+              <p className="mt-4 text-center text-xs leading-5 text-gray-400">
+                One-time payment. No automatic ₹199 charge.
+              </p>
             </div>
 
           </div>
