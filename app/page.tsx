@@ -1513,7 +1513,8 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 ₹199
 
                 <span className="text-base font-normal text-gray-400">
-                  /month
+  / 30 days
+                
                 </span>
               </div>
 
@@ -1596,8 +1597,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                   ✓ Website + Android app
                 </li>
 
-                <li>title="What is the Pro price?"
-description="The standard Pro renewal price is ₹199 for 30 days. The current launch offer gives new users their first 30 days for ₹1 with no automatic renewal."
+                <li>
                   ✓ Same account everywhere
                 </li>
 
@@ -1669,7 +1669,7 @@ description="The standard Pro renewal price is ₹199 for 30 days. The current l
 
             <InfoCard
               title="What is the Pro price?"
-              description="The planned Mosan AI Pro subscription is ₹199 per month."
+              description="The standard Pro renewal price is ₹199 for 30 days. Eligible new users can get their first 30 days for ₹1. There is no automatic renewal; you must pay manually to renew Pro."
             />
 
             <InfoCard
