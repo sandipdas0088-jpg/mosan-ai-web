@@ -1480,9 +1480,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                   ✓ Website access
                 </li>
 
-                <li>
-                  ✓ Android app access
-                </li>
+            
               </ul>
 
               <button
@@ -1532,12 +1530,10 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 </li>
 
                 <li>
-                  ✓ Website + Android app
+                ✓ Website access
                 </li>
 
-                <li>
-                  ✓ Same account everywhere
-                </li>
+                
 
                 <li>
                   ✓ Manual renewal
@@ -1594,12 +1590,10 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 </li>
 
                 <li>
-                  ✓ Website + Android app
+                  ✓ Website access
                 </li>
 
-                <li>
-                  ✓ Same account everywhere
-                </li>
+                
 
                 <li>
                   ✓ No automatic renewal
@@ -1621,7 +1615,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 }}
                 className="mt-8 w-full rounded-xl bg-cyan-500 py-3.5 font-bold text-black transition hover:bg-cyan-400"
               >
-                Get Launch Offer — ₹1
+                <li>✓ Android app access</li>
               </button>
 
               <p className="mt-4 text-center text-xs leading-5 text-gray-400">
@@ -1630,7 +1624,18 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
             </div>
 
           </div>
-
+          {/* Android App Coming Soon */}
+          <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-7 text-center">
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-3xl">📱</span>
+              <h3 className="text-xl font-bold text-white">
+                Mosan AI Android App — Coming Soon
+              </h3>
+            </div>
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-400">
+              We&apos;re working on the Mosan AI Android app. For now, enjoy Mosan AI on our website.
+            </p>
+          </div>
         </div>
 
       </section>
