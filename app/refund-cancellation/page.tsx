@@ -20,7 +20,7 @@ export default function RefundCancellationPage() {
           </h1>
 
           <p className="mt-3 text-sm text-slate-400">
-            Last updated: October 4, 2026
+            Last updated: October 11, 2026
           </p>
         </div>
 
@@ -46,32 +46,36 @@ export default function RefundCancellationPage() {
               2. Pro Subscription
             </h2>
 
-            <p>
-              Mosan AI Pro is currently offered at ₹199 per month unless a
-              different price is clearly displayed during checkout.
+                        <p>
+              Mosan AI Pro is offered as a one-time payment for 30 days of
+              access. Eligible new users may pay ₹1 for their first 30 days
+              under the launch offer. The standard manual renewal price is
+              ₹199 for each additional 30-day period, unless a different
+              price is clearly displayed during checkout.
             </p>
-
             <p className="mt-3">
-              The subscription may automatically renew each month according to
-              the subscription terms shown during payment.
+              Payments do not automatically renew. Pro access expires at
+              the end of the paid 30-day period unless the user manually
+              makes another payment. Mosan AI will not automatically charge
+              ₹199 for the next period.
             </p>
           </section>
 
-          <section>
+                    <section>
             <h2 className="mb-3 text-2xl font-semibold text-white">
-              3. Cancellation
+              3. Cancellation and Expiry
             </h2>
 
             <p>
-              You may request cancellation of your Pro subscription before the
-              next scheduled renewal.
+              Mosan AI Pro purchases are one-time payments and do not
+              automatically renew. You do not need to cancel a recurring
+              subscription to prevent future charges.
             </p>
 
             <p className="mt-3">
-              Cancellation normally prevents future renewal charges. Your
-              existing paid subscription may continue until the end of the
-              applicable billing period, unless otherwise required by law or
-              agreed by Mosan AI.
+              You can use Pro until the end of your paid 30-day period.
+              After that, Pro access expires unless you manually renew.
+              Refund requests remain subject to this policy and applicable law.
             </p>
           </section>
 

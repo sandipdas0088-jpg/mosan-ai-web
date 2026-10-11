@@ -103,16 +103,18 @@ export default function TermsPage() {
               5. Pro Subscription
             </h2>
 
-            <p>
-              Mosan AI may offer a paid Pro subscription. The current listed
-              price is ₹199 per month, unless a different price is clearly
-              displayed at the time of purchase.
+                        <p>
+              Mosan AI Pro is offered as a one-time payment for 30 days of
+              access. Eligible new users may receive the launch offer at ₹1
+              for their first 30 days. The standard manual renewal price is
+              ₹199 for each additional 30-day period, unless a different
+              price is clearly displayed during checkout.
             </p>
-
             <p className="mt-3">
-              A subscription may automatically renew according to the billing
-              terms shown during checkout until it is cancelled or otherwise
-              terminated.
+              Payments do not automatically renew. When the 30-day access
+              period ends, Pro access expires unless you choose to make
+              another payment manually. Mosan AI will not automatically
+              charge ₹199 for the next period.
             </p>
 
             <p className="mt-3">
@@ -121,22 +123,21 @@ export default function TermsPage() {
             </p>
           </section>
 
-          <section>
+                    <section>
             <h2 className="mb-3 text-2xl font-semibold text-white">
-              6. Subscription Cancellation
+              6. Pro Access Expiry
             </h2>
 
             <p>
-              You may request cancellation of your Pro subscription according
-              to the cancellation process made available by Mosan AI or the
-              applicable payment provider.
+              Mosan AI Pro is purchased for a fixed 30-day period and does
+              not automatically renew. There is no recurring payment to
+              cancel.
             </p>
 
             <p className="mt-3">
-              Cancellation generally prevents future renewal charges but does
-              not automatically create a refund for a previously completed
-              billing period, except where a refund is applicable under our
-              Refund & Cancellation Policy or applicable law.
+              When the paid 30-day period ends, Pro access expires unless
+              you manually renew it. Refund requests are handled according
+              to our Refund & Cancellation Policy and applicable law.
             </p>
           </section>
 
