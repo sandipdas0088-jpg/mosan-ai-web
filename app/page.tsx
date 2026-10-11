@@ -1332,9 +1332,9 @@ const deletePrompt = async (promptId: string) => {
             />
 
             <FeatureCard
-              icon="📱"
-              title="Website + App"
-              description="Use the same Mosan AI account across web and Android."
+              icon="✍️"
+              title="Creator Friendly"
+              description="Create prompts for images, videos, stories, advertisements, and social media."
             />
 
           </div>
@@ -1615,7 +1615,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 }}
                 className="mt-8 w-full rounded-xl bg-cyan-500 py-3.5 font-bold text-black transition hover:bg-cyan-400"
               >
-                <li>✓ Android app access</li>
+              Get Launch Offer — ₹1
               </button>
 
               <p className="mt-4 text-center text-xs leading-5 text-gray-400">
@@ -1663,13 +1663,13 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
           <div className="space-y-4">
 
             <InfoCard
-              title="Can I use the same account on the Android app?"
-              description="Yes. The planned architecture uses the same Supabase account and backend for both the website and Android app."
+              title="Can I use Mosan AI on different devices?"
+              description="Yes. You can sign in to your Mosan AI account from a supported browser on your devices."
             />
 
             <InfoCard
-              title="How will the free limit work?"
-              description="The final backend will count generations centrally so website and Android usage share the same daily limit."
+              title="How does the free limit work?"
+              description="Free accounts can generate up to 3 prompts per day on the website. Your account's daily usage is checked before generation."
             />
 
             <InfoCard
@@ -1678,8 +1678,8 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
             />
 
             <InfoCard
-              title="Will the AI API key be inside the Android app?"
-              description="No. The production architecture will keep the AI API key on the secure backend."
+              title="Is the AI API key exposed in my browser?"
+              description="No. Prompt generation runs through Mosan AI's secure backend, and the AI provider API key is not exposed in the website code."
             />
 
           </div>
