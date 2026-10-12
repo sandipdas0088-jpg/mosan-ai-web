@@ -38,7 +38,9 @@ export const metadata: Metadata = {
     description:
       "Create better AI prompts in seconds with Mosan AI.",
   },
-
+verification: {
+  google: "Hd87QwWfH8Ask5ueVgUsPsoUev5hlDe7pfh0EeD1QUw",
+},
   robots: {
     index: true,
     follow: true,
