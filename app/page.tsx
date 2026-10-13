@@ -791,6 +791,18 @@ const deletePrompt = async (promptId: string) => {
 
   return (
     <main className="min-h-screen bg-[#050816] text-white">
+            <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Mosan AI",
+            alternateName: "Mosan AI Prompt Generator",
+            url: "https://mosan-ai-web.vercel.app/",
+          }),
+        }}
+      />
       {showHistory && (
   <section className="mx-auto max-w-7xl px-6 py-10">
 
