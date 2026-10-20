@@ -34,6 +34,15 @@ export default function Home() {
 
 const [subscriptionPlan, setSubscriptionPlan] = useState("free");
 const [subscriptionStatus, setSubscriptionStatus] = useState("inactive");
+const [subscriptionExpiry, setSubscriptionExpiry] = useState<string | null>(null);
+const [hasSubscriptionRecord, setHasSubscriptionRecord] = useState(false);
+const [subscriptionChecked, setSubscriptionChecked] = useState(false);
+
+const isProActive =
+  subscriptionPlan === "pro" &&
+  subscriptionStatus === "active" &&
+  !!subscriptionExpiry &&
+  new Date(subscriptionExpiry).getTime() > Date.now();
 
   // =========================================================
   // PROMPT GENERATOR STATE
@@ -92,7 +101,7 @@ const [historyLoading, setHistoryLoading] = useState(false);
 
     const { data: subscription, error } = await supabase
       .from("subscriptions")
-      .select("plan, status")
+      .select("plan, status, expires_at")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -108,10 +117,16 @@ const [historyLoading, setHistoryLoading] = useState(false);
     if (subscription) {
       setSubscriptionPlan(subscription.plan || "free");
       setSubscriptionStatus(subscription.status || "inactive");
+      setSubscriptionExpiry(subscription.expires_at || null);
+      setHasSubscriptionRecord(true);
     } else {
       setSubscriptionPlan("free");
       setSubscriptionStatus("inactive");
+      setSubscriptionExpiry(null);
+      setHasSubscriptionRecord(false);
     }
+
+    setSubscriptionChecked(true);
   } else {
     setUserEmail(null);
     setSubscriptionPlan("free");
@@ -448,7 +463,7 @@ try {
         isProUser = expiryTime > currentTime;
       } else {
         // Existing old Pro account without expiry date
-        isProUser = true;
+        isProUser = false;
       }
     }
   }
