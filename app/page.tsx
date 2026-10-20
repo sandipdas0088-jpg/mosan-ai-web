@@ -1642,7 +1642,15 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 }}
                 className="mt-8 w-full rounded-xl bg-cyan-500 py-3.5 font-bold text-black transition hover:bg-cyan-400"
               >
-              Get Launch Offer — ₹1
+              {!userEmail
+  ? "Get Launch Offer — ₹1"
+  : !subscriptionChecked
+  ? "Checking plan..."
+  : isProActive
+  ? "Pro Active"
+  : hasSubscriptionRecord
+  ? "Renew Pro — ₹199"
+  : "Get Launch Offer — ₹1"}
               </button>
 
               <p className="mt-4 text-center text-xs leading-5 text-gray-400">
