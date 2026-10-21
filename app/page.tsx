@@ -169,8 +169,13 @@ const [historyLoading, setHistoryLoading] = useState(false);
 
     const { data: subscription, error } = await supabase
       .from("subscriptions")
-      .select("plan, status, expires_at")
+            .select("plan, status, expires_at")
       .eq("user_id", user.id)
+      .eq("plan", "pro")
+      .eq("status", "active")
+      .gt("expires_at", new Date().toISOString())
+      .order("expires_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (error) {
