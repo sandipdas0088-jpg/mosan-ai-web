@@ -1585,7 +1585,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 </h3>
 
                 <span className="rounded-full bg-cyan-400 px-3 py-1 text-xs font-bold text-black">
-                  LAUNCH OFFER
+                  LAUNCH OFFER ONLY ₹49
                 </span>
               </div>
 
@@ -1595,7 +1595,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 </div>
 
                 <div className="mt-1 text-5xl font-extrabold text-cyan-300">
-                  ₹1
+                  ₹49
                 </div>
 
                 <div className="mt-2 text-sm font-medium text-gray-300">
@@ -1628,6 +1628,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
 
                 <li>
                   ✓ Renew manually at ₹199
+✓ 30 AI image generations per 30 days
                 </li>
               </ul>
 
@@ -1643,14 +1644,14 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 className="mt-8 w-full rounded-xl bg-cyan-500 py-3.5 font-bold text-black transition hover:bg-cyan-400"
               >
               {!userEmail
-  ? "Get Launch Offer — ₹1"
+  ? "Get Launch Offer — ₹49"
   : !subscriptionChecked
   ? "Checking plan..."
   : isProActive
   ? "Pro Active"
   : hasSubscriptionRecord
   ? "Renew Pro — ₹199"
-  : "Get Launch Offer — ₹1"}
+  : "Get Launch Offer — ₹49"}
               </button>
 
               <p className="mt-4 text-center text-xs leading-5 text-gray-400">
@@ -1709,7 +1710,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
 
             <InfoCard
               title="What is the Pro price?"
-              description="The standard Pro renewal price is ₹199 for 30 days. Eligible new users can get their first 30 days for ₹1. There is no automatic renewal; you must pay manually to renew Pro."
+              description="The launch offer is ₹49 for the first 30 days. Manual Pro renewal costs ₹199 for 30 days. No automatic renewal."
             />
 
             <InfoCard
