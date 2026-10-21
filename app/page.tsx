@@ -63,6 +63,14 @@ const isProActive =
   const [error, setError] = useState("");
   const [promptHistory, setPromptHistory] = useState<PromptHistory[]>([]);
 const [showHistory, setShowHistory] = useState(false);
+
+  // IMAGE GENERATION STATE
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [generatedImage, setGeneratedImage] = useState("");
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState("");
+  const [imagesRemaining, setImagesRemaining] = useState<number | null>(null);
+
 const [historyLoading, setHistoryLoading] = useState(false);
 
   // =========================================================
@@ -82,6 +90,66 @@ const [historyLoading, setHistoryLoading] = useState(false);
       subscription.unsubscribe();
     };
   }, []);
+
+  // GENERATE IMAGE (PRO ONLY, 30 PER MONTH)
+  const generateImage = async () => {
+    if (!userEmail) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    if (!isProActive) {
+      setImageError("Image generation is available to Pro users only.");
+      return;
+    }
+
+    if (!imagePrompt.trim()) {
+      setImageError("Please enter an image description.");
+      return;
+    }
+
+    setImageLoading(true);
+    setImageError("");
+    setGeneratedImage("");
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        setShowAuthModal(true);
+        throw new Error("Please log in again.");
+      }
+
+      const response = await fetch(
+        "https://mosan-ai-backend.onrender.com/api/generate-image",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ prompt: imagePrompt.trim() }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Image generation failed.");
+      }
+
+      setGeneratedImage(data.image);
+      setImagesRemaining(data.images_remaining);
+    } catch (err) {
+      setImageError(
+        err instanceof Error ? err.message : "Image generation failed."
+      );
+    } finally {
+      setImageLoading(false);
+    }
+  };
 
   // =========================================================
   // GET CURRENT USER
@@ -1320,7 +1388,75 @@ const deletePrompt = async (promptId: string) => {
         </div>
 
       </section>
+      {/* MOSAN AI IMAGE GENERATOR */}
+      <section
+        id="image-generator"
+        className="border-t border-white/10 px-6 py-16"
+      >
+        <div className="mx-auto max-w-4xl rounded-2xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+          <h2 className="text-2xl font-bold">
+            AI Image Generator
+          </h2>
 
+          <p className="mt-2 text-sm text-gray-400">
+            Generate AI images with your Pro plan — 30 images per month.
+          </p>
+
+          {!isProActive && (
+            <p className="mt-3 text-sm text-amber-300">
+              Pro subscription is required to generate images.
+            </p>
+          )}
+
+          <textarea
+            value={imagePrompt}
+            onChange={(e) => setImagePrompt(e.target.value)}
+            placeholder="Describe the image you want to create..."
+            className="mt-5 w-full rounded-xl border border-white/10 bg-[#050816] p-4 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            rows={4}
+            maxLength={2000}
+          />
+
+          <button
+            type="button"
+            onClick={generateImage}
+            disabled={imageLoading}
+            className="mt-4 rounded-xl bg-purple-600 px-6 py-3 font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {imageLoading ? "Generating Image..." : "Generate Image"}
+          </button>
+
+          {imagesRemaining !== null && (
+            <p className="mt-3 text-sm text-gray-400">
+              Images remaining this month: {imagesRemaining}
+            </p>
+          )}
+
+          {imageError && (
+            <p className="mt-3 text-sm text-red-400">
+              {imageError}
+            </p>
+          )}
+
+          {generatedImage && (
+            <div className="mt-6">
+              <img
+                src={generatedImage}
+                alt="AI generated image"
+                className="w-full rounded-xl border border-white/10"
+              />
+
+              <a
+                href={generatedImage}
+                download="mosan-ai-image.png"
+                className="mt-4 inline-block rounded-xl border border-white/20 px-5 py-3 font-medium transition hover:bg-white/10"
+              >
+                Download Image
+              </a>
+            </div>
+          )}
+        </div>
+      </section>
       {/* =====================================================
           FEATURES SECTION
       ====================================================== */}
