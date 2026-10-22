@@ -1914,13 +1914,13 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
               </div>
 
               <div className="mt-5">
-                <div className="text-sm text-gray-500 line-through">
-                  ₹199 / 30 Days
-                </div>
+  <div className="text-sm text-gray-500 line-through">
+    ₹199
+  </div>
 
-                <div className="mt-1 text-5xl font-extrabold text-cyan-300">
-                  ₹1
-                </div>
+  <div className="mt-1 text-5xl font-extrabold text-cyan-300">
+    ₹1
+  </div>
 
                 <div className="mt-2 text-sm font-medium text-gray-300">
                   for the first 7 days
@@ -1949,11 +1949,9 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 <li>
                   ✓ No automatic renewal
                 </li>
-
-                <li>
-                  ✓ Renew manually at ₹199
-✓ 30 AI image generations per 30 days
-                </li>
+                <li>✓ First 7 days of full Pro access for ₹1</li>
+<li>✓ Renew manually at ₹199 for 30 days</li>
+<li>✓ No automatic renewal</li>
               </ul>
 
               <button
