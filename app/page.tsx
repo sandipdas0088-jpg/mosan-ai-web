@@ -1950,9 +1950,8 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                   ✓ No automatic renewal
                 </li>
                 <li>✓ First 7 days of full Pro access for ₹1</li>
-<li>✓ Renew manually at ₹199 for 30 days</li>
-<li>✓ No automatic renewal</li>
-              </ul>
+                <li>✓ Renew manually at ₹199 for 30 days</li>
+                </ul>
 
               <button
                 onClick={() => {
