@@ -1909,7 +1909,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 </h3>
 
                 <span className="rounded-full bg-cyan-400 px-3 py-1 text-xs font-bold text-black">
-                  LAUNCH OFFER ONLY ₹49
+       LAUNCH OFFER ONLY ₹1           
                 </span>
               </div>
 
@@ -1919,16 +1919,16 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 </div>
 
                 <div className="mt-1 text-5xl font-extrabold text-cyan-300">
-                  ₹49
+                  ₹1
                 </div>
 
                 <div className="mt-2 text-sm font-medium text-gray-300">
-                  for the first 30 days
+                  for the first 7 days
                 </div>
               </div>
 
               <p className="mt-4 text-sm leading-6 text-gray-300">
-                Get Mosan AI Pro for just ₹1 for your first 30 days.
+                Get Mosan AI Pro for just ₹1 for your first 7 days.
               </p>
 
               <ul className="mt-8 space-y-4 text-sm text-gray-200">
@@ -1967,15 +1967,15 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 }}
                 className="mt-8 w-full rounded-xl bg-cyan-500 py-3.5 font-bold text-black transition hover:bg-cyan-400"
               >
-              {!userEmail
-  ? "Get Launch Offer — ₹49"
+             {!userEmail
+  ? "Get Launch Offer — ₹1"
   : !subscriptionChecked
   ? "Checking plan..."
   : isProActive
   ? "Pro Active"
   : hasSubscriptionRecord
   ? "Renew Pro — ₹199"
-  : "Get Launch Offer — ₹49"}
+  : "Get Launch Offer — ₹1"}
               </button>
 
               <p className="mt-4 text-center text-xs leading-5 text-gray-400">
@@ -2034,7 +2034,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
 
             <InfoCard
               title="What is the Pro price?"
-              description="The launch offer is ₹49 for the first 30 days. Manual Pro renewal costs ₹199 for 30 days. No automatic renewal."
+              description="Launch Offer: ₹1 for the first 7 days of full Pro access. Manual renewal: ₹199 for 30 days. No automatic renewal."
             />
 
             <InfoCard
