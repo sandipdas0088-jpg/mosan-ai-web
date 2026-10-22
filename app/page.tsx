@@ -70,6 +70,9 @@ const [showHistory, setShowHistory] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState("");
   const [imagesRemaining, setImagesRemaining] = useState<number | null>(null);
+  const [trialPaymentLoading, setTrialPaymentLoading] = useState(false);
+const [trialImagesRemainingToday, setTrialImagesRemainingToday] = useState<number | null>(null);
+const [trialImagesRemainingTotal, setTrialImagesRemainingTotal] = useState<number | null>(null);
 
 const [historyLoading, setHistoryLoading] = useState(false);
 
@@ -90,7 +93,164 @@ const [historyLoading, setHistoryLoading] = useState(false);
       subscription.unsubscribe();
     };
   }, []);
+// =========================================================
+// BUY ₹1 IMAGE TRIAL — 7 DAYS, NO AUTO RENEWAL
+// =========================================================
 
+const buyImageTrial = async () => {
+  if (!userEmail) {
+    setShowAuthModal(true);
+    return;
+  }
+
+  setTrialPaymentLoading(true);
+  setImageError("");
+
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      setShowAuthModal(true);
+      throw new Error("Please log in again.");
+    }
+
+    // CREATE ₹1 TRIAL ORDER
+    const orderResponse = await fetch(
+      "https://mosan-ai-backend.onrender.com/api/create-image-trial-order",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      }
+    );
+
+    const orderData = await orderResponse.json();
+
+    if (!orderResponse.ok || !orderData.success) {
+      throw new Error(
+        orderData.message || "Could not create Image Trial order."
+      );
+    }
+
+    // LOAD RAZORPAY CHECKOUT
+    if (!(window as any).Razorpay) {
+      await new Promise<void>((resolve, reject) => {
+        const existingScript = document.querySelector(
+          'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
+        ) as HTMLScriptElement | null;
+
+        if (existingScript) {
+          existingScript.addEventListener("load", () => resolve(), { once: true });
+          existingScript.addEventListener("error", () => reject(new Error("Razorpay failed to load.")), { once: true });
+
+          if ((window as any).Razorpay) resolve();
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Razorpay failed to load."));
+        document.body.appendChild(script);
+      });
+    }
+
+    if (!(window as any).Razorpay) {
+      throw new Error("Razorpay Checkout is unavailable. Please refresh.");
+    }
+
+    const razorpay = new (window as any).Razorpay({
+      key: orderData.key_id,
+      amount: orderData.amount,
+      currency: orderData.currency,
+      order_id: orderData.order_id,
+      name: "Mosan AI",
+      description: "₹1 Image Trial — 7 Days, Up to 50 Images",
+      prefill: {
+        email: session.user.email || userEmail,
+      },
+      notes: {
+        product: "Mosan AI Image Trial",
+        payment_type: "image_trial",
+      },
+      theme: {
+        color: "#9333ea",
+      },
+
+      handler: async (paymentResponse: any) => {
+        try {
+          const {
+            data: { session: currentSession },
+          } = await supabase.auth.getSession();
+
+          if (!currentSession?.access_token) {
+            throw new Error("Please log in again to verify payment.");
+          }
+
+          const verifyResponse = await fetch(
+            "https://mosan-ai-backend.onrender.com/api/verify-image-trial-payment",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${currentSession.access_token}`,
+              },
+              body: JSON.stringify({
+                razorpay_order_id: paymentResponse.razorpay_order_id,
+                razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                razorpay_signature: paymentResponse.razorpay_signature,
+              }),
+            }
+          );
+
+          const verifyData = await verifyResponse.json();
+
+          if (!verifyResponse.ok || !verifyData.success) {
+            throw new Error(
+              verifyData.message ||
+                "Payment verification failed. Please contact support."
+            );
+          }
+
+          alert(
+            "Image Trial activated! You can generate up to 10 images per day, with a maximum of 50 images over 7 days."
+          );
+
+          window.location.reload();
+        } catch (err) {
+          setImageError(
+            err instanceof Error
+              ? err.message
+              : "Payment verification failed. Please contact support."
+          );
+        } finally {
+          setTrialPaymentLoading(false);
+        }
+      },
+    });
+
+    razorpay.on("payment.failed", (response: any) => {
+      setImageError(
+        response?.error?.description || "Payment failed. Please try again."
+      );
+      setTrialPaymentLoading(false);
+    });
+
+    razorpay.open();
+  } catch (err) {
+    setImageError(
+      err instanceof Error
+        ? err.message
+        : "Could not start Image Trial payment."
+    );
+    setTrialPaymentLoading(false);
+  }
+};
   // GENERATE IMAGE (PRO ONLY, 30 PER MONTH)
   const generateImage = async () => {
     if (!userEmail) {
@@ -98,10 +258,7 @@ const [historyLoading, setHistoryLoading] = useState(false);
       return;
     }
 
-    if (!isProActive) {
-      setImageError("Image generation is available to Pro users only.");
-      return;
-    }
+    
 
     if (!imagePrompt.trim()) {
       setImageError("Please enter an image description.");
@@ -141,7 +298,9 @@ const [historyLoading, setHistoryLoading] = useState(false);
       }
 
       setGeneratedImage(data.image);
-      setImagesRemaining(data.images_remaining);
+      setImagesRemaining(data.images_remaining ?? null);
+setTrialImagesRemainingToday(data.images_remaining_today ?? null);
+setTrialImagesRemainingTotal(data.images_remaining_total ?? null);
     } catch (err) {
       setImageError(
         err instanceof Error ? err.message : "Image generation failed."
@@ -1404,14 +1563,26 @@ const deletePrompt = async (promptId: string) => {
           </h2>
 
           <p className="mt-2 text-sm text-gray-400">
-            Generate AI images with your Pro plan — 30 images per month.
+            Generate AI images with Pro or unlock a one-time 7-day Image Trial.
           </p>
 
           {!isProActive && (
-            <p className="mt-3 text-sm text-amber-300">
-              Pro subscription is required to generate images.
-            </p>
-          )}
+  <div className="mt-4 rounded-xl border border-purple-400/20 bg-purple-400/5 p-4">
+    <p className="text-sm text-purple-200">
+      Try AI Image Generation for ₹1 — one-time payment, 7 days,
+      up to 10 images per day and 50 images total. No automatic renewal.
+    </p>
+
+    <button
+      type="button"
+      onClick={buyImageTrial}
+      disabled={trialPaymentLoading}
+      className="mt-4 w-full rounded-xl bg-purple-600 px-5 py-3 font-bold text-white transition hover:bg-purple-500 disabled:opacity-50"
+    >
+      {trialPaymentLoading ? "Processing..." : "Unlock Image Trial — ₹1"}
+    </button>
+  </div>
+)}
 
           <textarea
             value={imagePrompt}
@@ -1431,11 +1602,23 @@ const deletePrompt = async (promptId: string) => {
             {imageLoading ? "Generating Image..." : "Generate Image"}
           </button>
 
-          {imagesRemaining !== null && (
-            <p className="mt-3 text-sm text-gray-400">
-              Images remaining this month: {imagesRemaining}
-            </p>
-          )}
+         {imagesRemaining !== null && (
+  <p className="mt-3 text-sm text-gray-400">
+    Images remaining this month: {imagesRemaining}
+  </p>
+)}
+
+{trialImagesRemainingToday !== null && (
+  <p className="mt-3 text-sm text-gray-400">
+    Trial images remaining today: {trialImagesRemainingToday}
+  </p>
+)}
+
+{trialImagesRemainingTotal !== null && (
+  <p className="mt-1 text-sm text-gray-400">
+    Trial images remaining overall: {trialImagesRemainingTotal}
+  </p>
+)}
 
           {imageError && (
             <p className="mt-3 text-sm text-red-400">
