@@ -1557,94 +1557,74 @@ const deletePrompt = async (promptId: string) => {
         id="image-generator"
         className="border-t border-white/10 px-6 py-16"
       >
-        <div className="mx-auto max-w-4xl rounded-2xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
-          <h2 className="text-2xl font-bold">
-            AI Image Generator
-          </h2>
+        
+<div className="mx-auto max-w-4xl rounded-2xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+  <h2 className="text-2xl font-bold">
+    AI Image Generator
+  </h2>
 
-          <p className="mt-2 text-sm text-gray-400">
-            Generate AI images with Pro or unlock a one-time 7-day Image Trial.
-          </p>
+  <textarea
+    value={imagePrompt}
+    onChange={(e) => setImagePrompt(e.target.value)}
+    placeholder="Describe the image you want to create..."
+    className="mt-5 w-full rounded-xl border border-white/10 bg-[#050816] p-4 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+    rows={4}
+    maxLength={2000}
+  />
 
-          {!isProActive && (
-  <div className="mt-4 rounded-xl border border-purple-400/20 bg-purple-400/5 p-4">
-    <p className="text-sm text-purple-200">
-      Try AI Image Generation for ₹1 — one-time payment, 7 days,
-      up to 10 images per day and 50 images total. No automatic renewal.
+  <button
+    type="button"
+    onClick={generateImage}
+    disabled={imageLoading}
+    className="mt-4 rounded-xl bg-purple-600 px-6 py-3 font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    {imageLoading ? "Generating Image..." : "Generate Image"}
+  </button>
+
+  {imagesRemaining !== null && (
+    <p className="mt-3 text-sm text-gray-400">
+      Images remaining this month: {imagesRemaining}
     </p>
+  )}
 
-    <button
-      type="button"
-      onClick={buyImageTrial}
-      disabled={trialPaymentLoading}
-      className="mt-4 w-full rounded-xl bg-purple-600 px-5 py-3 font-bold text-white transition hover:bg-purple-500 disabled:opacity-50"
-    >
-      {trialPaymentLoading ? "Processing..." : "Unlock Image Trial — ₹1"}
-    </button>
-  </div>
-)}
+  {trialImagesRemainingToday !== null && (
+    <p className="mt-3 text-sm text-gray-400">
+      Trial images remaining today: {trialImagesRemainingToday}
+    </p>
+  )}
 
-          <textarea
-            value={imagePrompt}
-            onChange={(e) => setImagePrompt(e.target.value)}
-            placeholder="Describe the image you want to create..."
-            className="mt-5 w-full rounded-xl border border-white/10 bg-[#050816] p-4 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            rows={4}
-            maxLength={2000}
-          />
+  {trialImagesRemainingTotal !== null && (
+    <p className="mt-1 text-sm text-gray-400">
+      Trial images remaining overall: {trialImagesRemainingTotal}
+    </p>
+  )}
 
-          <button
-            type="button"
-            onClick={generateImage}
-            disabled={imageLoading}
-            className="mt-4 rounded-xl bg-purple-600 px-6 py-3 font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {imageLoading ? "Generating Image..." : "Generate Image"}
-          </button>
+  {imageError && (
+    <p className="mt-3 text-sm text-red-400">
+      {imageError}
+    </p>
+  )}
 
-         {imagesRemaining !== null && (
-  <p className="mt-3 text-sm text-gray-400">
-    Images remaining this month: {imagesRemaining}
-  </p>
-)}
+  {generatedImage && (
+    <div className="mt-6">
+      <img
+        src={generatedImage}
+        alt="AI generated image"
+        className="w-full rounded-xl border border-white/10"
+      />
 
-{trialImagesRemainingToday !== null && (
-  <p className="mt-3 text-sm text-gray-400">
-    Trial images remaining today: {trialImagesRemainingToday}
-  </p>
-)}
+      <a
+        href={generatedImage}
+        download="mosan-ai-image.png"
+        className="mt-4 inline-block rounded-xl border border-white/20 px-5 py-3 font-medium transition hover:bg-white/10"
+      >
+        Download Image
+      </a>
+    </div>
+  )}
+</div>
+</section>
 
-{trialImagesRemainingTotal !== null && (
-  <p className="mt-1 text-sm text-gray-400">
-    Trial images remaining overall: {trialImagesRemainingTotal}
-  </p>
-)}
-
-          {imageError && (
-            <p className="mt-3 text-sm text-red-400">
-              {imageError}
-            </p>
-          )}
-
-          {generatedImage && (
-            <div className="mt-6">
-              <img
-                src={generatedImage}
-                alt="AI generated image"
-                className="w-full rounded-xl border border-white/10"
-              />
-
-              <a
-                href={generatedImage}
-                download="mosan-ai-image.png"
-                className="mt-4 inline-block rounded-xl border border-white/20 px-5 py-3 font-medium transition hover:bg-white/10"
-              >
-                Download Image
-              </a>
-            </div>
-          )}
-        </div>
-      </section>
       {/* =====================================================
           FEATURES SECTION
       ====================================================== */}
