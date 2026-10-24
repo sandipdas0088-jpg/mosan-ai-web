@@ -64,6 +64,7 @@ export default function AuthModal({
           email,
           password,
         });
+        
 
         if (error) {
           setError(error.message);
@@ -159,6 +160,7 @@ export default function AuthModal({
               Password
             </label>
 
+            
             <input
               type="password"
               value={password}
@@ -166,7 +168,36 @@ export default function AuthModal({
               placeholder="Minimum 6 characters"
               className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none placeholder:text-gray-600 focus:border-cyan-400"
             />
+
+            <div className="mt-2 text-right">
+              <button
+                type="button"
+                onClick={async () => {
+                  const resetEmail = email.trim();
+
+                  if (!resetEmail) {
+                    alert("Please enter your registered email address first.");
+                    return;
+                  }
+
+                  const { error } =
+                    await supabase.auth.resetPasswordForEmail(resetEmail, {
+                      redirectTo: `${window.location.origin}/reset-password`,
+                    });
+
+                  if (error) {
+                    alert(error.message);
+                  } else {
+                    alert("Password reset link sent. Please check your email.");
+                  }
+                }}
+                className="text-sm text-cyan-400 hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
           </div>
+
         </div>
 
         {error && (
