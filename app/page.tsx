@@ -57,9 +57,62 @@ const isProActive =
   // =========================================================
   // GENERATED RESULT STATE
   // =========================================================
+const startVoiceInput = () => {
+  const SpeechRecognition =
+    (window as any).SpeechRecognition ||
+    (window as any).webkitSpeechRecognition;
 
+  if (!SpeechRecognition) {
+    setError(
+      "Voice input is not supported in this browser. Please try Google Chrome or Microsoft Edge."
+    );
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+
+  recognition.lang = voiceLanguage;
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    setIsListening(true);
+    setError("");
+  };
+
+  recognition.onresult = (event: any) => {
+    const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+
+    if (transcript) {
+      setIdea((previous: string) =>
+        previous ? `${previous} ${transcript}` : transcript
+      );
+    }
+  };
+
+  recognition.onerror = (event: any) => {
+    if (event.error === "not-allowed") {
+      setError("Please allow microphone access in your browser.");
+    } else {
+      setError("Voice recognition failed. Please try again.");
+    }
+  };
+
+  recognition.onend = () => {
+    setIsListening(false);
+  };
+
+  try {
+    recognition.start();
+  } catch {
+    setIsListening(false);
+    setError("Could not start voice input. Please try again.");
+  }
+};
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [generationMode, setGenerationMode] = useState<"prompt" | "answer">("prompt");
+  const [isListening, setIsListening] = useState(false);
+const [voiceLanguage, setVoiceLanguage] = useState("en-IN");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [promptHistory, setPromptHistory] = useState<PromptHistory[]>([]);
@@ -1310,7 +1363,41 @@ const deletePrompt = async (promptId: string) => {
             <label className="mb-2 block text-sm font-medium text-gray-300">
               Your Idea
             </label>
+<div className="mb-3 flex flex-wrap items-center gap-3">
+  <label htmlFor="voice-language" className="text-sm text-gray-300">
+    Voice Language
+  </label>
 
+  <select
+    id="voice-language"
+    value={voiceLanguage}
+    onChange={(e) => setVoiceLanguage(e.target.value)}
+    className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"
+  >
+    <option value="en-IN">English</option>
+    <option value="bn-IN">Bengali</option>
+    <option value="hi-IN">Hindi</option>
+    <option value="as-IN">Assamese</option>
+    <option value="or-IN">Odia</option>
+    <option value="mr-IN">Marathi</option>
+    <option value="gu-IN">Gujarati</option>
+    <option value="ta-IN">Tamil</option>
+    <option value="te-IN">Telugu</option>
+    <option value="kn-IN">Kannada</option>
+    <option value="ml-IN">Malayalam</option>
+    <option value="pa-IN">Punjabi</option>
+    <option value="ur-IN">Urdu</option>
+  </select>
+
+  <button
+    type="button"
+    onClick={startVoiceInput}
+    disabled={isListening || loading}
+    className="rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-4 py-3 text-sm font-semibold text-cyan-300 hover:bg-cyan-400/20 disabled:opacity-50"
+  >
+    {isListening ? "Listening..." : "🎤 Speak to Type"}
+  </button>
+</div>
             <textarea
               value={idea}
               onChange={(e) => setIdea(e.target.value)}
@@ -1449,29 +1536,39 @@ const deletePrompt = async (promptId: string) => {
             {/* BUTTONS */}
 
             <div className="mt-6 flex gap-3">
-<div className="mb-4 flex flex-wrap gap-3">
+<div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
   <button
     type="button"
     onClick={() => setGenerationMode("answer")}
-    className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+    className={`rounded-xl border p-4 text-left transition ${
       generationMode === "answer"
-        ? "bg-cyan-400 text-black"
-        : "border border-white/10 text-white"
+        ? "border-cyan-400 bg-cyan-400/10"
+        : "border-white/10 bg-black/20 hover:border-cyan-400/50"
     }`}
   >
-    Direct Answer
+    <span className="block text-base font-bold text-cyan-300">
+      ✨ Ask Mosan
+    </span>
+    <span className="mt-1 block text-sm font-normal text-gray-300">
+      Ask questions, write scripts, translate text, and get direct answers.
+    </span>
   </button>
 
   <button
     type="button"
     onClick={() => setGenerationMode("prompt")}
-    className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+    className={`rounded-xl border p-4 text-left transition ${
       generationMode === "prompt"
-        ? "bg-cyan-400 text-black"
-        : "border border-white/10 text-white"
+        ? "border-purple-400 bg-purple-400/10"
+        : "border-white/10 bg-black/20 hover:border-purple-400/50"
     }`}
   >
-    Prompt Generator
+    <span className="block text-base font-bold text-purple-300">
+      🎯 Prompt Studio
+    </span>
+    <span className="mt-1 block text-sm font-normal text-gray-300">
+      Create polished prompts to use with other AI tools.
+    </span>
   </button>
 </div>
               <button
