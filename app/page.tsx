@@ -59,6 +59,7 @@ const isProActive =
   // =========================================================
 
   const [generatedPrompt, setGeneratedPrompt] = useState("");
+  const [generationMode, setGenerationMode] = useState<"prompt" | "answer">("prompt");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [promptHistory, setPromptHistory] = useState<PromptHistory[]>([]);
@@ -787,7 +788,9 @@ try {
       // -------------------------------------------------------
 
       const response = await fetch(
-        "https://mosan-ai-backend.onrender.com/api/test-generate",
+        generationMode === "answer"
+  ? "https://mosan-ai-backend.onrender.com/api/direct-answer"
+  : "https://mosan-ai-backend.onrender.com/api/test-generate",
         {
           method: "POST",
           headers: {
@@ -1446,7 +1449,31 @@ const deletePrompt = async (promptId: string) => {
             {/* BUTTONS */}
 
             <div className="mt-6 flex gap-3">
+<div className="mb-4 flex flex-wrap gap-3">
+  <button
+    type="button"
+    onClick={() => setGenerationMode("answer")}
+    className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+      generationMode === "answer"
+        ? "bg-cyan-400 text-black"
+        : "border border-white/10 text-white"
+    }`}
+  >
+    Direct Answer
+  </button>
 
+  <button
+    type="button"
+    onClick={() => setGenerationMode("prompt")}
+    className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+      generationMode === "prompt"
+        ? "bg-cyan-400 text-black"
+        : "border border-white/10 text-white"
+    }`}
+  >
+    Prompt Generator
+  </button>
+</div>
               <button
                 onClick={generatePrompt}
                 disabled={loading}
