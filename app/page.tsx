@@ -1347,16 +1347,52 @@ const deletePrompt = async (promptId: string) => {
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl">
 
             <div className="mb-6">
+  <h2 className="text-2xl font-bold">
+    {generationMode === "answer" ? "Ask Mosan" : "Prompt Studio"}
+  </h2>
 
-              <h2 className="text-2xl font-bold">
-                Prompt Generator
-              </h2>
+  <p className="mt-2 text-sm text-gray-400">
+    {generationMode === "answer"
+      ? "Ask questions, write stories or scripts, translate text, and get direct answers."
+      : "Create polished prompts to use with other AI tools."}
+  </p>
+</div>
 
-              <p className="mt-2 text-sm text-gray-400">
-                Describe what you want to create.
-              </p>
+<div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+  <button
+    type="button"
+    onClick={() => setGenerationMode("answer")}
+    className={`rounded-xl border p-4 text-left transition ${
+      generationMode === "answer"
+        ? "border-cyan-400 bg-cyan-400/10"
+        : "border-white/10 bg-black/20 hover:border-cyan-400/50"
+    }`}
+  >
+    <span className="block font-bold text-cyan-300">
+      ✨ Ask Mosan
+    </span>
+    <span className="mt-1 block text-sm text-gray-300">
+      Ask questions, write scripts, translate text, and get direct answers.
+    </span>
+  </button>
 
-            </div>
+  <button
+    type="button"
+    onClick={() => setGenerationMode("prompt")}
+    className={`rounded-xl border p-4 text-left transition ${
+      generationMode === "prompt"
+        ? "border-purple-400 bg-purple-400/10"
+        : "border-white/10 bg-black/20 hover:border-purple-400/50"
+    }`}
+  >
+    <span className="block font-bold text-purple-300">
+      🎯 Prompt Studio
+    </span>
+    <span className="mt-1 block text-sm text-gray-300">
+      Create polished prompts to use with other AI tools.
+    </span>
+  </button>
+</div>
 
             {/* IDEA */}
 
@@ -1406,7 +1442,7 @@ const deletePrompt = async (promptId: string) => {
             />
 
             {/* OPTIONS */}
-
+{generationMode === "prompt" && (
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
 
               {/* CONTENT TYPE */}
@@ -1497,7 +1533,7 @@ const deletePrompt = async (promptId: string) => {
               </div>
 
             </div>
-
+)}
             {/* FREE LIMIT */}
 
             <div className="mt-6 rounded-xl border border-cyan-400/10 bg-cyan-400/5 p-4">
@@ -1536,47 +1572,16 @@ const deletePrompt = async (promptId: string) => {
             {/* BUTTONS */}
 
             <div className="mt-6 flex gap-3">
-<div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-  <button
-    type="button"
-    onClick={() => setGenerationMode("answer")}
-    className={`rounded-xl border p-4 text-left transition ${
-      generationMode === "answer"
-        ? "border-cyan-400 bg-cyan-400/10"
-        : "border-white/10 bg-black/20 hover:border-cyan-400/50"
-    }`}
-  >
-    <span className="block text-base font-bold text-cyan-300">
-      ✨ Ask Mosan
-    </span>
-    <span className="mt-1 block text-sm font-normal text-gray-300">
-      Ask questions, write scripts, translate text, and get direct answers.
-    </span>
-  </button>
-
-  <button
-    type="button"
-    onClick={() => setGenerationMode("prompt")}
-    className={`rounded-xl border p-4 text-left transition ${
-      generationMode === "prompt"
-        ? "border-purple-400 bg-purple-400/10"
-        : "border-white/10 bg-black/20 hover:border-purple-400/50"
-    }`}
-  >
-    <span className="block text-base font-bold text-purple-300">
-      🎯 Prompt Studio
-    </span>
-    <span className="mt-1 block text-sm font-normal text-gray-300">
-      Create polished prompts to use with other AI tools.
-    </span>
-  </button>
-</div>
               <button
                 onClick={generatePrompt}
                 disabled={loading}
                 className="flex-1 rounded-xl bg-cyan-500 px-6 py-3.5 font-bold text-black transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {loading ? "Generating..." : "Generate Prompt"}
+                {loading
+  ? "Generating..."
+  : generationMode === "answer"
+    ? "Generate Answer"
+    : "Generate Prompt"}
               </button>
 
               <button
@@ -1601,7 +1606,7 @@ const deletePrompt = async (promptId: string) => {
               <div>
 
                 <h2 className="text-2xl font-bold">
-                  Generated Prompt
+                  {generationMode === "answer" ? "Mosan's Response" : "Generated Prompt"}
                 </h2>
 
                 <p className="mt-2 text-sm text-gray-400">
@@ -1656,7 +1661,9 @@ const deletePrompt = async (promptId: string) => {
                     </div>
 
                     <h3 className="text-lg font-semibold text-gray-300">
-                      Your generated prompt will appear here
+                      {generationMode === "answer"
+                       ? "Your answer, story, script, or translation will appear here."
+                       : "Your generated prompt will appear here."}
                     </h3>
 
                     <p className="mt-2 max-w-sm text-sm text-gray-500">
