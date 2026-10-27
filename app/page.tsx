@@ -1347,14 +1347,12 @@ const deletePrompt = async (promptId: string) => {
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl">
 
             <div className="mb-6">
-  <h2 className="text-2xl font-bold">
-    {generationMode === "answer" ? "Ask Mosan" : "Prompt Studio"}
+  <h2 className="text-2xl font-bold text-white">
+    What can I help you with?
   </h2>
 
   <p className="mt-2 text-sm text-gray-400">
-    {generationMode === "answer"
-      ? "Ask questions, write stories or scripts, translate text, and get direct answers."
-      : "Create polished prompts to use with other AI tools."}
+    Choose a mode, type your request, or use voice input.
   </p>
 </div>
 
@@ -1533,7 +1531,7 @@ const deletePrompt = async (promptId: string) => {
               </div>
 
             </div>
-)}
+            )}
             {/* FREE LIMIT */}
 
             <div className="mt-6 rounded-xl border border-cyan-400/10 bg-cyan-400/5 p-4">
