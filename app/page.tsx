@@ -110,7 +110,7 @@ const startVoiceInput = () => {
   }
 };
   const [generatedPrompt, setGeneratedPrompt] = useState("");
-  const [generationMode, setGenerationMode] = useState<"prompt" | "answer">("prompt");
+  const [generationMode, setGenerationMode] = useState<"prompt" | "answer">("answer");
   const [isListening, setIsListening] = useState(false);
 const [voiceLanguage, setVoiceLanguage] = useState("en-IN");
   const [loading, setLoading] = useState(false);
@@ -1608,8 +1608,10 @@ const deletePrompt = async (promptId: string) => {
                 </h2>
 
                 <p className="mt-2 text-sm text-gray-400">
-                  Your AI-ready prompt will appear here.
-                </p>
+  {generationMode === "answer"
+    ? "Your answer, story, script, or translation will appear here."
+    : "Your AI-ready prompt will appear here."}
+</p>
 
               </div>
 
