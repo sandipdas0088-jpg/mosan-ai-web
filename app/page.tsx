@@ -1333,432 +1333,450 @@ const deletePrompt = async (promptId: string) => {
           GENERATOR SECTION
       ====================================================== */}
 
-      <section
-        id="generator"
-        className="px-6 pb-20"
-      >
+    {/* =====================================================
+    MOSAN AI — UNIFIED CHAT WORKSPACE
+====================================================== */}
 
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-2">
+<section
+  id="generator"
+  className="bg-[#f2f1f8] px-4 py-10 sm:px-6 sm:py-14"
+>
+  <div className="mx-auto max-w-4xl">
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-900/5">
 
-          {/* =================================================
-              LEFT SIDE
-          ================================================== */}
+      {/* HEADER */}
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5">
-
-            <div className="mb-6">
-  <h2 className="text-2xl font-bold text-white">
-    What can I help you with?
-  </h2>
-
-  <p className="mt-2 text-sm text-gray-400">
-    Choose a mode, type your request, or use voice input.
-  </p>
-</div>
-
-<div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-  <button
-    type="button"
-    onClick={() => setGenerationMode("answer")}
-    className={`rounded-xl border p-4 text-left transition ${
-      generationMode === "answer"
-  ? "border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200"
-  : "border-slate-200 bg-white hover:border-cyan-300 hover:bg-cyan-50/50"
-    }`}
-  >
-    <span className="block font-bold text-cyan-300">
-      ✨ Ask Mosan
-    </span>
-    <span className="mt-1 block text-sm text-gray-300">
-      Ask questions, write scripts, translate text, and get direct answers.
-    </span>
-  </button>
-
-  <button
-    type="button"
-    onClick={() => setGenerationMode("prompt")}
-    className={`rounded-xl border p-4 text-left transition ${
-      generationMode === "prompt"
-  ? "border-purple-500 bg-purple-50 ring-1 ring-purple-200"
-  : "border-slate-200 bg-white hover:border-purple-300 hover:bg-purple-50/50"
-    }`}
-  >
-    <span className="block font-bold text-purple-300">
-      🎯 Prompt Studio
-    </span>
-    <span className="mt-1 block text-sm text-gray-300">
-      Create polished prompts to use with other AI tools.
-    </span>
-  </button>
-</div>
-
-            {/* IDEA */}
-
-            <label className="mb-2 block text-sm font-medium text-gray-300">
-              Your Idea
-            </label>
-<div className="mb-3 flex flex-wrap items-center gap-3">
-  <label htmlFor="voice-language" className="text-sm text-gray-300">
-    Voice Language
-  </label>
-
-  <select
-    id="voice-language"
-    value={voiceLanguage}
-    onChange={(e) => setVoiceLanguage(e.target.value)}
-    className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm text-white"
-  >
-    <option value="en-IN">English</option>
-    <option value="bn-IN">Bengali</option>
-    <option value="hi-IN">Hindi</option>
-    <option value="as-IN">Assamese</option>
-    <option value="or-IN">Odia</option>
-    <option value="mr-IN">Marathi</option>
-    <option value="gu-IN">Gujarati</option>
-    <option value="ta-IN">Tamil</option>
-    <option value="te-IN">Telugu</option>
-    <option value="kn-IN">Kannada</option>
-    <option value="ml-IN">Malayalam</option>
-    <option value="pa-IN">Punjabi</option>
-    <option value="ur-IN">Urdu</option>
-  </select>
-
-  <button
-    type="button"
-    onClick={startVoiceInput}
-    disabled={isListening || loading}
-    className="rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-4 py-3 text-sm font-semibold text-cyan-300 hover:bg-cyan-400/20 disabled:opacity-50"
-  >
-    {isListening ? "Listening..." : "🎤 Speak to Type"}
-  </button>
-</div>
-            <textarea
-              value={idea}
-              onChange={(e) => setIdea(e.target.value)}
-              placeholder="Example: A futuristic Indian city at sunset..."
-              className="h-36 w-full resize-none rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
-            />
-
-            {/* OPTIONS */}
-{generationMode === "prompt" && (
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-
-              {/* CONTENT TYPE */}
-
-              <div>
-
-                <label className="mb-2 block text-sm text-gray-400">
-                  Content Type
-                </label>
-
-                <select
-                  value={contentType}
-                  onChange={(e) => setContentType(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
-                >
-                  <option>Image</option>
-                  <option>Video</option>
-                  <option>Text</option>
-                  <option>Story</option>
-                  <option>Advertisement</option>
-                  <option>Social Media</option>
-                </select>
-
-              </div>
-
-              {/* STYLE */}
-
-              <div>
-
-                <label className="mb-2 block text-sm text-gray-400">
-                  Style
-                </label>
-
-                <select
-                  value={style}
-                  onChange={(e) => setStyle(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-[#0b1020] px-4 py-3 text-white outline-none"
-                >
-                  <option>Cinematic</option>
-                  <option>Realistic</option>
-                  <option>Professional</option>
-                  <option>Creative</option>
-                  <option>Minimal</option>
-                  <option>Luxury</option>
-                </select>
-
-              </div>
-
-              {/* LANGUAGE */}
-
-              <div>
-
-                <label className="mb-2 block text-sm text-gray-400">
-                  Language
-                </label>
-
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-[#0b1020] px-4 py-3 text-white outline-none"
-                >
-                  <option>English</option>
-                  <option>Hindi</option>
-                  <option>Bengali</option>
-                  <option>Hinglish</option>
-                </select>
-
-              </div>
-
-              {/* PROMPT LENGTH */}
-
-              <div>
-
-                <label className="mb-2 block text-sm text-gray-400">
-                  Prompt Length
-                </label>
-
-                <select
-                  value={promptLength}
-                  onChange={(e) => setPromptLength(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-[#0b1020] px-4 py-3 text-white outline-none"
-                >
-                  <option>Short</option>
-                  <option>Detailed</option>
-                  <option>Very Detailed</option>
-                </select>
-
-              </div>
-
-            </div>
-            )}
-            {/* FREE LIMIT */}
-
-            <div className="mt-6 rounded-xl border border-cyan-400/10 bg-cyan-400/5 p-4">
-
-              <div className="flex items-center justify-between">
-
-                <span className="text-sm text-gray-400">
-                  Free generations
-                </span>
-
-                <span className="font-semibold text-cyan-400">
-                  3 / day
-                </span>
-
-              </div>
-
-            </div>
-
-            {/* LOGIN STATUS */}
-
-            {!userEmail && (
-              <div className="mt-4 rounded-xl border border-yellow-400/10 bg-yellow-400/5 p-4 text-sm text-yellow-300">
-                Please login or create a free account before generating a
-                prompt.
-              </div>
-            )}
-
-            {/* ERROR */}
-
-            {error && (
-              <div className="mt-4 rounded-xl border border-red-400/20 bg-red-400/10 p-4 text-sm text-red-300">
-                {error}
-              </div>
-            )}
-
-            {/* BUTTONS */}
-
-            <div className="mt-6 flex gap-3">
-              <button
-                onClick={generatePrompt}
-                disabled={loading}
-                className="flex-1 rounded-xl bg-cyan-600 px-6 py-3.5 font-bold text-white shadow-sm transition hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading
-  ? "Generating..."
-  : generationMode === "answer"
-    ? "Generate Answer"
-    : "Generate Prompt"}
-              </button>
-
-              <button
-                onClick={clearAll}
-                className="rounded-xl border border-white/10 px-6 py-3.5 font-medium text-gray-300 transition hover:bg-white/10"
-              >
-                Clear
-              </button>
-
-            </div>
-
+      <div className="border-b border-slate-100 p-5 sm:p-7">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-50 text-2xl">
+            ✨
           </div>
 
-          {/* =================================================
-              RIGHT SIDE
-          ================================================== */}
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">
+              Mosan AI
+            </h2>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl">
+            <p className="mt-1 text-sm text-slate-500">
+              Your AI workspace
+            </p>
+          </div>
+        </div>
+      </div>
 
-            <div className="mb-6 flex items-center justify-between">
+      {/* MODE SELECTOR */}
 
-              <div>
+      <div className="grid grid-cols-2 gap-3 p-4 sm:p-6">
+        <button
+          type="button"
+          onClick={() => setGenerationMode("answer")}
+          className={`rounded-2xl border p-4 text-left transition ${
+            generationMode === "answer"
+              ? "border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200"
+              : "border-slate-200 bg-white hover:border-cyan-300"
+          }`}
+        >
+          <span className="block font-bold text-cyan-800">
+            ✨ Ask Mosan
+          </span>
 
-                <h2 className="text-2xl font-bold">
-                  {generationMode === "answer" ? "Mosan's Response" : "Generated Prompt"}
-                </h2>
+          <span className="mt-1 block text-xs leading-5 text-slate-600 sm:text-sm">
+            Ask anything. Get answers.
+          </span>
+        </button>
 
-                <p className="mt-2 text-sm text-gray-400">
-  {generationMode === "answer"
-    ? "Your answer, story, script, or translation will appear here."
-    : "Your AI-ready prompt will appear here."}
-</p>
+        <button
+          type="button"
+          onClick={() => setGenerationMode("prompt")}
+          className={`rounded-2xl border p-4 text-left transition ${
+            generationMode === "prompt"
+              ? "border-purple-500 bg-purple-50 ring-1 ring-purple-200"
+              : "border-slate-200 bg-white hover:border-purple-300"
+          }`}
+        >
+          <span className="block font-bold text-purple-800">
+            🎯 Prompt Studio
+          </span>
 
+          <span className="mt-1 block text-xs leading-5 text-slate-600 sm:text-sm">
+            Create AI prompts.
+          </span>
+        </button>
+      </div>
+
+      {/* CONVERSATION / RESULT */}
+
+      <div
+        aria-live="polite"
+        className="space-y-5 px-4 pb-5 sm:px-6"
+      >
+        {generatedPrompt && (
+          <>
+            {/* USER REQUEST */}
+
+            <div className="flex justify-end">
+              <div className="max-w-[90%] rounded-2xl rounded-br-md bg-cyan-50 px-4 py-3 text-sm leading-6 text-slate-800 sm:max-w-[80%]">
+                {idea}
               </div>
-
-              {generatedPrompt && (
-                <button
-                  onClick={copyPrompt}
-                  className="rounded-xl border border-white/10 px-4 py-2 text-sm transition hover:bg-white/10"
-                >
-                  Copy
-                </button>
-              )}
-              {generatedPrompt && (
-  <button
-    onClick={savePrompt}
-    className="rounded-xl border border-white/10 px-4 py-2 text-sm transition hover:bg-white/10"
-  >
-    Save Prompt
-  </button>
-)}
-              {generatedPrompt && (
-  <button
-    onClick={generatePrompt}
-    className="rounded-xl border border-white/10 px-4 py-2 text-sm transition hover:bg-white/10"
-  >
-    Regenerate
-  </button>
-)}
-
             </div>
 
-            <div className="min-h-[420px] rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            {/* MOSAN RESPONSE */}
 
-              {generatedPrompt ? (
-
-                <pre className="whitespace-pre-wrap font-sans text-sm leading-7 text-gray-200">
-                  {generatedPrompt}
-                </pre>
-
-              ) : (
-
-                <div className="flex min-h-[380px] items-center justify-center text-center">
-
-                  <div>
-
-                    <div className="mb-4 text-5xl">
-                      ✨
-                    </div>
-
-                    <h3 className="text-lg font-semibold text-gray-300">
-                      {generationMode === "answer"
-                       ? "Your answer, story, script, or translation will appear here."
-                       : "Your generated prompt will appear here."}
-                    </h3>
-
-                    <p className="mt-2 max-w-sm text-sm text-gray-500">
-                      Enter an idea on the left and click Generate Prompt.
-                    </p>
-
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50">
+                    ✨
                   </div>
 
+                  <h3 className="font-semibold text-slate-900">
+                    {generationMode === "answer"
+                      ? "Mosan's Response"
+                      : "Generated Prompt"}
+                  </h3>
                 </div>
 
-              )}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={copyPrompt}
+                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Copy
+                  </button>
 
+                  {generationMode === "prompt" && (
+                    <button
+                      type="button"
+                      onClick={savePrompt}
+                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Save Prompt
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={generatePrompt}
+                    disabled={loading}
+                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                  >
+                    Regenerate
+                  </button>
+                </div>
+              </div>
+
+              <div className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-800">
+                {generatedPrompt}
+              </div>
             </div>
+          </>
+        )}
 
+        {/* GENERATED IMAGE — SHOWN IN THE SAME WORKSPACE */}
+
+        {generatedImage && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+            <h3 className="mb-4 font-semibold text-slate-900">
+              Generated Image
+            </h3>
+
+            <img
+              src={generatedImage}
+              alt="AI generated image"
+              className="w-full rounded-xl border border-slate-200"
+            />
+
+            <a
+              href={generatedImage}
+              download="mosan-ai-image.png"
+              className="mt-4 inline-flex rounded-xl bg-purple-600 px-5 py-3 font-semibold text-white transition hover:bg-purple-500"
+            >
+              Download Image
+            </a>
           </div>
+        )}
 
+        {!generatedPrompt && !generatedImage && (
+          <div className="rounded-2xl bg-slate-50 px-4 py-12 text-center">
+            <div className="mb-3 text-4xl">✨</div>
+
+            <h3 className="font-semibold text-slate-800">
+              What can I help you with?
+            </h3>
+
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+              Ask a question, write a story, create a script, translate text, or generate an AI prompt.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* MESSAGE COMPOSER */}
+
+      <div className="border-t border-slate-100 p-4 sm:p-6">
+        <label
+          htmlFor="mosan-message"
+          className="mb-3 block text-sm font-semibold text-slate-700"
+        >
+          Your Message
+        </label>
+
+        {/* VOICE INPUT */}
+
+        <div className="mb-3 flex flex-wrap items-center gap-3">
+          <label
+            htmlFor="voice-language"
+            className="text-sm text-slate-600"
+          >
+            Voice Language
+          </label>
+
+          <select
+            id="voice-language"
+            value={voiceLanguage}
+            onChange={(e) => setVoiceLanguage(e.target.value)}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-cyan-500"
+          >
+            <option value="en-IN">English</option>
+            <option value="bn-IN">Bengali</option>
+            <option value="hi-IN">Hindi</option>
+            <option value="as-IN">Assamese</option>
+            <option value="or-IN">Odia</option>
+            <option value="mr-IN">Marathi</option>
+            <option value="gu-IN">Gujarati</option>
+            <option value="ta-IN">Tamil</option>
+            <option value="te-IN">Telugu</option>
+            <option value="kn-IN">Kannada</option>
+            <option value="ml-IN">Malayalam</option>
+            <option value="pa-IN">Punjabi</option>
+            <option value="ur-IN">Urdu</option>
+          </select>
+
+          <button
+            type="button"
+            onClick={startVoiceInput}
+            disabled={isListening || loading}
+            className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-semibold text-cyan-800 transition hover:bg-cyan-100 disabled:opacity-50"
+          >
+            {isListening ? "Listening..." : "🎤 Speak to Type"}
+          </button>
         </div>
 
-      </section>
-      {/* MOSAN AI IMAGE GENERATOR */}
-      <section
-        id="image-generator"
-        className="border-t border-white/10 px-6 py-16"
-      >
-        
-<div className="mx-auto max-w-4xl rounded-2xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
-  <h2 className="text-2xl font-bold">
-    AI Image Generator
-  </h2>
+        <textarea
+          id="mosan-message"
+          value={idea}
+          onChange={(e) => setIdea(e.target.value)}
+          placeholder={
+            generationMode === "answer"
+              ? "Ask anything, write a story, or request a script..."
+              : "Describe the prompt you want to create..."
+          }
+          className="min-h-32 w-full resize-y rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
+        />
 
-  <textarea
-    value={imagePrompt}
-    onChange={(e) => setImagePrompt(e.target.value)}
-    placeholder="Describe the image you want to create..."
-    className="mt-5 w-full rounded-xl border border-white/10 bg-[#050816] p-4 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-    rows={4}
-    maxLength={2000}
-  />
+        {/* PROMPT STUDIO OPTIONS */}
 
-  <button
-    type="button"
-    onClick={generateImage}
-    disabled={imageLoading}
-    className="mt-4 rounded-xl bg-purple-600 px-6 py-3 font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    {imageLoading ? "Generating Image..." : "Generate Image"}
-  </button>
+        {generationMode === "prompt" && (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm text-slate-600">
+                Content Type
+              </label>
 
-  {imagesRemaining !== null && (
-    <p className="mt-3 text-sm text-gray-400">
-      Images remaining this month: {imagesRemaining}
-    </p>
-  )}
+              <select
+                value={contentType}
+                onChange={(e) => setContentType(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none focus:border-cyan-500"
+              >
+                <option>Image</option>
+                <option>Video</option>
+                <option>Text</option>
+                <option>Story</option>
+                <option>Advertisement</option>
+                <option>Social Media</option>
+              </select>
+            </div>
 
-  {trialImagesRemainingToday !== null && (
-    <p className="mt-3 text-sm text-gray-400">
-      Trial images remaining today: {trialImagesRemainingToday}
-    </p>
-  )}
+            <div>
+              <label className="mb-2 block text-sm text-slate-600">
+                Style
+              </label>
 
-  {trialImagesRemainingTotal !== null && (
-    <p className="mt-1 text-sm text-gray-400">
-      Trial images remaining overall: {trialImagesRemainingTotal}
-    </p>
-  )}
+              <select
+                value={style}
+                onChange={(e) => setStyle(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none focus:border-cyan-500"
+              >
+                <option>Cinematic</option>
+                <option>Realistic</option>
+                <option>Professional</option>
+                <option>Creative</option>
+                <option>Minimal</option>
+                <option>Luxury</option>
+              </select>
+            </div>
 
-  {imageError && (
-    <p className="mt-3 text-sm text-red-400">
-      {imageError}
-    </p>
-  )}
+            <div>
+              <label className="mb-2 block text-sm text-slate-600">
+                Output Language
+              </label>
 
-  {generatedImage && (
-    <div className="mt-6">
-      <img
-        src={generatedImage}
-        alt="AI generated image"
-        className="w-full rounded-xl border border-white/10"
-      />
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none focus:border-cyan-500"
+              >
+                <option>English</option>
+                <option>Hindi</option>
+                <option>Bengali</option>
+                <option>Assamese</option>
+                <option>Odia</option>
+                <option>Marathi</option>
+                <option>Gujarati</option>
+                <option>Tamil</option>
+                <option>Telugu</option>
+                <option>Kannada</option>
+                <option>Malayalam</option>
+                <option>Punjabi</option>
+                <option>Urdu</option>
+                <option>Hinglish</option>
+              </select>
+            </div>
 
-      <a
-        href={generatedImage}
-        download="mosan-ai-image.png"
-        className="mt-4 inline-block rounded-xl border border-white/20 px-5 py-3 font-medium transition hover:bg-white/10"
-      >
-        Download Image
-      </a>
+            <div>
+              <label className="mb-2 block text-sm text-slate-600">
+                Prompt Length
+              </label>
+
+              <select
+                value={promptLength}
+                onChange={(e) => setPromptLength(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none focus:border-cyan-500"
+              >
+                <option>Short</option>
+                <option>Detailed</option>
+                <option>Very Detailed</option>
+              </select>
+            </div>
+          </div>
+        )}
+
+        {/* FREE PLAN AND LOGIN */}
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+          <span className="text-slate-500">
+            Free generations: <strong className="text-slate-700">3 / day</strong>
+          </span>
+
+          {!userEmail && (
+            <span className="text-amber-700">
+              Please log in to generate content.
+            </span>
+          )}
+        </div>
+
+        {error && (
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        {/* ACTION BUTTONS */}
+
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={generatePrompt}
+            disabled={loading}
+            className="flex-1 rounded-xl bg-cyan-600 px-5 py-3.5 font-bold text-white shadow-sm transition hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {loading
+              ? "Generating..."
+              : generationMode === "answer"
+                ? "Generate Answer"
+                : "Generate Prompt"}
+          </button>
+
+          <button
+            type="button"
+            onClick={clearAll}
+            className="rounded-xl border border-slate-200 bg-white px-5 py-3.5 font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            Clear
+          </button>
+        </div>
+
+        {/* IMAGE GENERATION — SAME WORKSPACE */}
+
+        <details
+          id="image-generator"
+          open={Boolean(generatedImage || imageError)}
+          className="mt-5 rounded-2xl border border-purple-200 bg-purple-50/60 p-4"
+        >
+          <summary className="cursor-pointer list-none font-semibold text-purple-800">
+            🖼️ Create Image
+            <span className="ml-2 text-sm font-normal text-purple-600">
+              Generate an image in this workspace
+            </span>
+          </summary>
+
+          <div className="mt-4">
+            <label
+              htmlFor="image-prompt"
+              className="mb-2 block text-sm font-medium text-slate-700"
+            >
+              Image Description
+            </label>
+
+            <textarea
+              id="image-prompt"
+              value={imagePrompt}
+              onChange={(e) => setImagePrompt(e.target.value)}
+              placeholder="Describe the image you want to create..."
+              className="min-h-24 w-full resize-y rounded-xl border border-slate-200 bg-white p-4 text-slate-900 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+              rows={3}
+              maxLength={2000}
+            />
+
+            <button
+              type="button"
+              onClick={generateImage}
+              disabled={imageLoading}
+              className="mt-3 rounded-xl bg-purple-600 px-5 py-3 font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {imageLoading ? "Generating Image..." : "Generate Image"}
+            </button>
+
+            {imagesRemaining !== null && (
+              <p className="mt-3 text-sm text-slate-600">
+                Images remaining this month: {imagesRemaining}
+              </p>
+            )}
+
+            {trialImagesRemainingToday !== null && (
+              <p className="mt-2 text-sm text-slate-600">
+                Trial images remaining today: {trialImagesRemainingToday}
+              </p>
+            )}
+
+            {trialImagesRemainingTotal !== null && (
+              <p className="mt-2 text-sm text-slate-600">
+                Trial images remaining overall: {trialImagesRemainingTotal}
+              </p>
+            )}
+
+            {imageError && (
+              <p className="mt-3 text-sm text-red-600">
+                {imageError}
+              </p>
+            )}
+          </div>
+        </details>
+      </div>
     </div>
-  )}
-</div>
+  </div>
 </section>
-
-      {/* =====================================================
-          FEATURES SECTION
-      ====================================================== */}
 
       <section
         id="features"
