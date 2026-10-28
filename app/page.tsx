@@ -1344,7 +1344,7 @@ const deletePrompt = async (promptId: string) => {
               LEFT SIDE
           ================================================== */}
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5">
 
             <div className="mb-6">
   <h2 className="text-2xl font-bold text-white">
@@ -1362,8 +1362,8 @@ const deletePrompt = async (promptId: string) => {
     onClick={() => setGenerationMode("answer")}
     className={`rounded-xl border p-4 text-left transition ${
       generationMode === "answer"
-        ? "border-cyan-400 bg-cyan-400/10"
-        : "border-white/10 bg-black/20 hover:border-cyan-400/50"
+  ? "border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200"
+  : "border-slate-200 bg-white hover:border-cyan-300 hover:bg-cyan-50/50"
     }`}
   >
     <span className="block font-bold text-cyan-300">
@@ -1379,8 +1379,8 @@ const deletePrompt = async (promptId: string) => {
     onClick={() => setGenerationMode("prompt")}
     className={`rounded-xl border p-4 text-left transition ${
       generationMode === "prompt"
-        ? "border-purple-400 bg-purple-400/10"
-        : "border-white/10 bg-black/20 hover:border-purple-400/50"
+  ? "border-purple-500 bg-purple-50 ring-1 ring-purple-200"
+  : "border-slate-200 bg-white hover:border-purple-300 hover:bg-purple-50/50"
     }`}
   >
     <span className="block font-bold text-purple-300">
@@ -1436,7 +1436,7 @@ const deletePrompt = async (promptId: string) => {
               value={idea}
               onChange={(e) => setIdea(e.target.value)}
               placeholder="Example: A futuristic Indian city at sunset..."
-              className="h-36 w-full resize-none rounded-2xl border border-white/10 bg-black/30 p-4 text-white outline-none transition placeholder:text-gray-600 focus:border-cyan-400/50"
+              className="h-36 w-full resize-none rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
             />
 
             {/* OPTIONS */}
@@ -1454,7 +1454,7 @@ const deletePrompt = async (promptId: string) => {
                 <select
                   value={contentType}
                   onChange={(e) => setContentType(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-[#0b1020] px-4 py-3 text-white outline-none"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
                 >
                   <option>Image</option>
                   <option>Video</option>
@@ -1573,7 +1573,7 @@ const deletePrompt = async (promptId: string) => {
               <button
                 onClick={generatePrompt}
                 disabled={loading}
-                className="flex-1 rounded-xl bg-cyan-500 px-6 py-3.5 font-bold text-black transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-xl bg-cyan-600 px-6 py-3.5 font-bold text-white shadow-sm transition hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading
   ? "Generating..."
@@ -1642,7 +1642,7 @@ const deletePrompt = async (promptId: string) => {
 
             </div>
 
-            <div className="min-h-[420px] rounded-2xl border border-white/10 bg-black/30 p-5">
+            <div className="min-h-[420px] rounded-2xl border border-slate-200 bg-slate-50 p-5">
 
               {generatedPrompt ? (
 
