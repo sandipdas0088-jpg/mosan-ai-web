@@ -460,8 +460,11 @@ const handleUpgrade = async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (!user?.id) {
+    if (!user?.id || !session?.access_token) {
       alert("Please login again before upgrading to Pro.");
       return;
     }
@@ -479,10 +482,9 @@ const handleUpgrade = async () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({
-          user_id: user.id,
-        }),
+        body: JSON.stringify({}),
       }
     );
 
@@ -539,7 +541,7 @@ const handleUpgrade = async () => {
       data.payment_type === "launch";
 
     const description = isLaunchOffer
-      ? "Mosan AI Pro - ₹1 Launch Offer (30 Days)"
+      ? "Mosan AI Pro - ₹1 Launch Offer (7 Days)"
       : "Mosan AI Pro - ₹199 Manual Renewal (30 Days)";
 
     // =========================================================
@@ -584,6 +586,7 @@ const handleUpgrade = async () => {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${session.access_token}`,
               },
               body: JSON.stringify({
                 razorpay_payment_id:
@@ -783,45 +786,8 @@ try {
     }
   }
 
-  // -------------------------------------------------------
-  // FREE USER → CHECK 3 DAILY GENERATIONS
-  // -------------------------------------------------------
-
-  if (!isProUser) {
-    const { data, error: usageError } =
-      await supabase.rpc("use_free_generation");
-
-    if (usageError) {
-      console.error(
-        "Generation limit error:",
-        usageError
-      );
-
-      setError(
-        "Could not check your daily generation limit."
-      );
-
-      return;
-    }
-
-    if (!data?.allowed) {
-      setError(
-        "You have reached your 3 free prompt generations for today. Please try again tomorrow."
-      );
-
-      return;
-    }
-  }
-
-  // -------------------------------------------------------
-  // PRO USER → NO DAILY LIMIT
-  // -------------------------------------------------------
-
-  if (isProUser) {
-    console.log(
-      "Mosan AI Pro user detected — unlimited generation enabled."
-    );
-  }
+  // Daily free quota is consumed atomically by the authenticated backend.
+  // The browser only displays subscription status; it does not spend quota.
 
 } catch (error) {
   console.error(
@@ -851,12 +817,22 @@ try {
       // SEND REQUEST TO PYTHON FASTAPI BACKEND
       // -------------------------------------------------------
 
+      const {
+        data: { session: chatSession },
+      } = await supabase.auth.getSession();
+
+      if (!chatSession?.access_token) {
+        setShowAuthModal(true);
+        return;
+      }
+
       const response = await fetch(
   "https://mosan-ai-backend.onrender.com/api/direct-answer",
   {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${chatSession.access_token}`,
     },
     body: JSON.stringify({
       idea: userRequest,
@@ -955,11 +931,14 @@ setIdea("");
         return;
       }
 
+      const lastUserIdea =
+        [...chatMessages].reverse().find((message) => message.role === "user")?.content || idea;
+
       const { error } = await supabase
         .from("prompt_history")
         .insert({
           user_id: user.id,
-          idea: idea,
+          idea: lastUserIdea,
           generated_prompt: generatedPrompt,
           content_type: contentType,
           style: style,
