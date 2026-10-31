@@ -471,8 +471,8 @@ const handleUpgrade = async () => {
 
     // =========================================================
     // CREATE ONE-TIME PRO ORDER
-    // FIRST PURCHASE = ₹1
-    // RENEWAL = ₹199
+    // FIRST PRO PURCHASE = ₹199
+    // MANUAL RENEWAL = ₹199
     // NO AUTOMATIC RECURRING PAYMENT
     // =========================================================
 
