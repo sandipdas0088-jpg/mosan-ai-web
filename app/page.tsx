@@ -538,10 +538,10 @@ const handleUpgrade = async () => {
     // =========================================================
 
     const isLaunchOffer =
-      data.payment_type === "launch";
+      data.payment_type === "pro";
 
     const description = isLaunchOffer
-      ? "Mosan AI Pro - ₹1 Launch Offer (7 Days)"
+      ? "Mosan AI Pro - ₹199 (30 Days)"
       : "Mosan AI Pro - ₹199 Manual Renewal (30 Days)";
 
     // =========================================================
@@ -1673,11 +1673,11 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
 
               <ul className="mt-8 space-y-4 text-sm text-gray-300">
                 <li>
-                  ✓ Unlimited prompt generation
+                  ✓ Up to 10 images per day
                 </li>
 
                 <li>
-                  ✓ Advanced prompts
+                  ✓ Maximum 50 images over 7 days
                 </li>
 
                 <li>
@@ -1709,7 +1709,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 </h3>
 
                 <span className="rounded-full bg-cyan-400 px-3 py-1 text-xs font-bold text-black">
-       LAUNCH OFFER ONLY ₹1           
+       SEPARATE IMAGE TRIAL           
                 </span>
               </div>
 
@@ -1723,12 +1723,12 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
   </div>
 
                 <div className="mt-2 text-sm font-medium text-gray-300">
-                  for the first 7 days
+                  Image generation for 7 days
                 </div>
               </div>
 
               <p className="mt-4 text-sm leading-6 text-gray-300">
-                Get Mosan AI Pro for just ₹1 for your first 7 days.
+                Get image generation for 7 days. This does not activate Pro.
               </p>
 
               <ul className="mt-8 space-y-4 text-sm text-gray-200">
@@ -1741,11 +1741,10 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 </li>
 
                 <li>
-                  ✓ Website access
+                  ✓ One-time image trial
                 </li>
                 <li>✓ No automatic renewal</li>
-                <li>✓ First 7 days of full Pro access for ₹1</li>
-                <li>✓ Renew manually at ₹199 for 30 days</li>
+                <li>✓ Pro is purchased separately for ₹199 / 30 days</li>
                 </ul>
 
               <button
@@ -1755,19 +1754,17 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                     return;
                   }
 
-                  handleUpgrade();
+                  void buyImageTrial();
                 }}
                 className="mt-8 w-full rounded-xl bg-cyan-500 py-3.5 font-bold text-black transition hover:bg-cyan-400"
               >
              {!userEmail
-  ? "Get Launch Offer — ₹1"
+  ? "Buy ₹1 Image Trial"
   : !subscriptionChecked
   ? "Checking plan..."
   : isProActive
   ? "Pro Active"
-  : hasSubscriptionRecord
-  ? "Renew Pro — ₹199"
-  : "Get Launch Offer — ₹1"}
+  : "Buy ₹1 Image Trial"}
               </button>
 
               <p className="mt-4 text-center text-xs leading-5 text-gray-400">
@@ -1826,7 +1823,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
 
             <InfoCard
               title="What is the Pro price?"
-              description="Launch Offer: ₹1 for the first 7 days of full Pro access. Manual renewal: ₹199 for 30 days. No automatic renewal."
+              description="₹1 one-time Image Trial for 7 days (up to 50 images). Pro is separate at ₹199 for 30 days with manual renewal only."
             />
 
             <InfoCard
