@@ -9,6 +9,11 @@ interface GeneratedResult {
   success: boolean;
   message?: string;
   prompt?: string;
+  answer?: string;
+}
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
 }
 interface PromptHistory {
   id: string;
@@ -49,6 +54,7 @@ const isProActive =
   // =========================================================
 
   const [idea, setIdea] = useState("");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [contentType, setContentType] = useState("Image");
   const [style, setStyle] = useState("Cinematic");
   const [language, setLanguage] = useState("English");
@@ -170,7 +176,7 @@ const buyImageTrial = async () => {
       throw new Error("Please log in again.");
     }
 
-    // CREATE ₹1 TRIAL ORDER
+    // CREATE Γé╣1 TRIAL ORDER
     const orderResponse = await fetch(
       "https://mosan-ai-backend.onrender.com/api/create-image-trial-order",
       {
@@ -224,7 +230,7 @@ const buyImageTrial = async () => {
       currency: orderData.currency,
       order_id: orderData.order_id,
       name: "Mosan AI",
-      description: "₹1 Image Trial — 7 Days, Up to 50 Images",
+      description: "Γé╣1 Image Trial ΓÇö 7 Days, Up to 50 Images",
       prefill: {
         email: session.user.email || userEmail,
       },
@@ -277,11 +283,51 @@ const buyImageTrial = async () => {
 
           window.location.reload();
         } catch (err) {
-          setImageError(
-            err instanceof Error
-              ? err.message
-              : "Payment verification failed. Please contact support."
-          );
+          // If signature verification or the browser connection was interrupted,
+          // ask the backend to confirm the captured payment directly with Razorpay.
+          try {
+            const {
+              data: { session: recoverySession },
+            } = await supabase.auth.getSession();
+
+            if (!recoverySession?.access_token) {
+              throw new Error("Please log in again to recover your payment.");
+            }
+
+            const recoveryResponse = await fetch(
+              "https://mosan-ai-backend.onrender.com/api/recover-image-trial-payment",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${recoverySession.access_token}`,
+                },
+                body: JSON.stringify({
+                  razorpay_order_id: paymentResponse.razorpay_order_id,
+                  razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                }),
+              }
+            );
+            const recoveryData = await recoveryResponse.json();
+
+            if (!recoveryResponse.ok || !recoveryData.success) {
+              throw new Error(
+                recoveryData.message ||
+                  "Payment could not be recovered. Please contact support before paying again."
+              );
+            }
+
+            alert(
+              "Image Trial payment recovered and activated! You can generate up to 10 images per day, with a maximum of 50 images over 7 days."
+            );
+            window.location.reload();
+          } catch (recoveryError) {
+            setImageError(
+              recoveryError instanceof Error
+                ? recoveryError.message
+                : "Payment verification failed. If money was deducted, contact support before paying again."
+            );
+          }
         } finally {
           setTrialPaymentLoading(false);
         }
@@ -454,16 +500,19 @@ const handleUpgrade = async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (!user?.id) {
+    if (!user?.id || !session?.access_token) {
       alert("Please login again before upgrading to Pro.");
       return;
     }
 
     // =========================================================
     // CREATE ONE-TIME PRO ORDER
-    // FIRST PURCHASE = ₹1
-    // RENEWAL = ₹199
+    // FIRST PRO PURCHASE = ₹199
+    // MANUAL RENEWAL = ₹199
     // NO AUTOMATIC RECURRING PAYMENT
     // =========================================================
 
@@ -473,10 +522,9 @@ const handleUpgrade = async () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({
-          user_id: user.id,
-        }),
+        body: JSON.stringify({}),
       }
     );
 
@@ -530,10 +578,10 @@ const handleUpgrade = async () => {
     // =========================================================
 
     const isLaunchOffer =
-      data.payment_type === "launch";
+      data.payment_type === "pro";
 
     const description = isLaunchOffer
-      ? "Mosan AI Pro - ₹1 Launch Offer (30 Days)"
+      ? "Mosan AI Pro - ₹199 (30 Days)"
       : "Mosan AI Pro - ₹199 Manual Renewal (30 Days)";
 
     // =========================================================
@@ -578,6 +626,7 @@ const handleUpgrade = async () => {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${session.access_token}`,
               },
               body: JSON.stringify({
                 razorpay_payment_id:
@@ -677,7 +726,8 @@ const handleUpgrade = async () => {
     );
   }
 };
-  const generatePrompt = async () => {
+  const generatePrompt = async (requestText?: string) => {
+  const userRequest = (requestText ?? idea).trim();
     // ---------------------------------------------------------
     // LOGIN REQUIRED
     // ---------------------------------------------------------
@@ -691,10 +741,10 @@ const handleUpgrade = async () => {
     // IDEA VALIDATION
     // ---------------------------------------------------------
 
-    if (!idea.trim()) {
-      setError("Please enter your idea first.");
-      return;
-    }
+    if (!userRequest) {
+  setError("Please enter your message first.");
+  return;
+}
     // ---------------------------------------------------------
 // CHECK PRO / FREE PLAN
 // ---------------------------------------------------------
@@ -776,45 +826,8 @@ try {
     }
   }
 
-  // -------------------------------------------------------
-  // FREE USER → CHECK 3 DAILY GENERATIONS
-  // -------------------------------------------------------
-
-  if (!isProUser) {
-    const { data, error: usageError } =
-      await supabase.rpc("use_free_generation");
-
-    if (usageError) {
-      console.error(
-        "Generation limit error:",
-        usageError
-      );
-
-      setError(
-        "Could not check your daily generation limit."
-      );
-
-      return;
-    }
-
-    if (!data?.allowed) {
-      setError(
-        "You have reached your 3 free prompt generations for today. Please try again tomorrow."
-      );
-
-      return;
-    }
-  }
-
-  // -------------------------------------------------------
-  // PRO USER → NO DAILY LIMIT
-  // -------------------------------------------------------
-
-  if (isProUser) {
-    console.log(
-      "Mosan AI Pro user detected — unlimited generation enabled."
-    );
-  }
+  // Daily free quota is consumed atomically by the authenticated backend.
+  // The browser only displays subscription status; it does not spend quota.
 
 } catch (error) {
   console.error(
@@ -833,32 +846,45 @@ try {
 
     setLoading(true);
     setError("");
-    setGeneratedPrompt("");
+
+    setChatMessages((previous) => [
+      ...previous,
+      { role: "user", content: userRequest },
+    ]);
 
     try {
       // -------------------------------------------------------
       // SEND REQUEST TO PYTHON FASTAPI BACKEND
       // -------------------------------------------------------
 
+      const {
+        data: { session: chatSession },
+      } = await supabase.auth.getSession();
+
+      if (!chatSession?.access_token) {
+        setShowAuthModal(true);
+        return;
+      }
+
       const response = await fetch(
-        generationMode === "answer"
-  ? "https://mosan-ai-backend.onrender.com/api/direct-answer"
-  : "https://mosan-ai-backend.onrender.com/api/test-generate",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-  idea: idea,
-  content_type: contentType,
-  style: style,
-  language: language,
-  prompt_length: promptLength,
-  user_id: (await supabase.auth.getUser()).data.user?.id,
-}),
-        }
-      );
+  "https://mosan-ai-backend.onrender.com/api/direct-answer",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${chatSession.access_token}`,
+    },
+    body: JSON.stringify({
+      idea: userRequest,
+      content_type: contentType,
+      style,
+      language,
+      prompt_length: promptLength,
+      user_id: (await supabase.auth.getUser()).data.user?.id,
+      messages: chatMessages.slice(-12),
+    }),
+  }
+);
 
       // -------------------------------------------------------
       // CHECK BACKEND RESPONSE
@@ -887,7 +913,16 @@ try {
       // SHOW GENERATED PROMPT
       // -------------------------------------------------------
 
-      setGeneratedPrompt(data.prompt || "");
+      const answerText = data.answer || data.prompt || "";
+
+setGeneratedPrompt(answerText);
+
+setChatMessages((previous) => [
+  ...previous,
+  { role: "assistant", content: answerText },
+]);
+
+setIdea("");
     } catch (err) {
       console.error(err);
 
@@ -936,11 +971,14 @@ try {
         return;
       }
 
+      const lastUserIdea =
+        [...chatMessages].reverse().find((message) => message.role === "user")?.content || idea;
+
       const { error } = await supabase
         .from("prompt_history")
         .insert({
           user_id: user.id,
-          idea: idea,
+          idea: lastUserIdea,
           generated_prompt: generatedPrompt,
           content_type: contentType,
           style: style,
@@ -1060,10 +1098,9 @@ const deletePrompt = async (promptId: string) => {
 
   const clearAll = () => {
     setIdea("");
-    setGeneratedPrompt("");
     setError("");
+    setChatMessages([]);
   };
-
   // =========================================================
   // OPEN LOGIN
   // =========================================================
@@ -1333,450 +1370,124 @@ const deletePrompt = async (promptId: string) => {
           GENERATOR SECTION
       ====================================================== */}
 
-    {/* =====================================================
-    MOSAN AI — UNIFIED CHAT WORKSPACE
-====================================================== */}
-
-<section
-  id="generator"
-  className="bg-[#f2f1f8] px-4 py-10 sm:px-6 sm:py-14"
->
-  <div className="mx-auto max-w-4xl">
-    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-900/5">
-
-      {/* HEADER */}
-
-      <div className="border-b border-slate-100 p-5 sm:p-7">
+      <section id="generator" className="relative z-10 -my-8 border-y border-[#e2dcf0] bg-gradient-to-b from-[#f0ecfb] via-[#f4f1fc] to-[#edf4fb] px-4 py-10 text-slate-900 sm:px-6 lg:px-8">
+  <div className="mx-auto w-full max-w-5xl">
+    <div className="overflow-hidden rounded-3xl border border-[#ddd5ef] bg-[#f7f4fc] text-slate-900 shadow-xl shadow-[#51427a]/10">
+      <header className="border-b border-[#e2dbef] bg-gradient-to-r from-[#eee9fb] via-[#e9e7f9] to-[#e3f3f7] px-5 py-5 sm:px-8">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-50 text-2xl">
-            ✨
-          </div>
-
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-purple-600 text-lg font-extrabold text-white shadow-md">M</div>
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">
-              Mosan AI
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Your AI workspace
-            </p>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Mosan AI</h2>
+            <p className="mt-1 text-sm text-slate-600">One chat. Everything you need.</p>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* MODE SELECTOR */}
-
-      <div className="grid grid-cols-2 gap-3 p-4 sm:p-6">
-        <button
-          type="button"
-          onClick={() => setGenerationMode("answer")}
-          className={`rounded-2xl border p-4 text-left transition ${
-            generationMode === "answer"
-              ? "border-cyan-500 bg-cyan-50 ring-1 ring-cyan-200"
-              : "border-slate-200 bg-white hover:border-cyan-300"
-          }`}
-        >
-          <span className="block font-bold text-cyan-800">
-            ✨ Ask Mosan
-          </span>
-
-          <span className="mt-1 block text-xs leading-5 text-slate-600 sm:text-sm">
-            Ask anything. Get answers.
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setGenerationMode("prompt")}
-          className={`rounded-2xl border p-4 text-left transition ${
-            generationMode === "prompt"
-              ? "border-purple-500 bg-purple-50 ring-1 ring-purple-200"
-              : "border-slate-200 bg-white hover:border-purple-300"
-          }`}
-        >
-          <span className="block font-bold text-purple-800">
-            🎯 Prompt Studio
-          </span>
-
-          <span className="mt-1 block text-xs leading-5 text-slate-600 sm:text-sm">
-            Create AI prompts.
-          </span>
-        </button>
-      </div>
-
-      {/* CONVERSATION / RESULT */}
-
-      <div
-        aria-live="polite"
-        className="space-y-5 px-4 pb-5 sm:px-6"
-      >
-        {generatedPrompt && (
-          <>
-            {/* USER REQUEST */}
-
-            <div className="flex justify-end">
-              <div className="max-w-[90%] rounded-2xl rounded-br-md bg-cyan-50 px-4 py-3 text-sm leading-6 text-slate-800 sm:max-w-[80%]">
-                {idea}
-              </div>
-            </div>
-
-            {/* MOSAN RESPONSE */}
-
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50">
-                    ✨
-                  </div>
-
-                  <h3 className="font-semibold text-slate-900">
-                    {generationMode === "answer"
-                      ? "Mosan's Response"
-                      : "Generated Prompt"}
-                  </h3>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={copyPrompt}
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
-                  >
-                    Copy
-                  </button>
-
-                  {generationMode === "prompt" && (
-                    <button
-                      type="button"
-                      onClick={savePrompt}
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
-                    >
-                      Save Prompt
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={generatePrompt}
-                    disabled={loading}
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
-                  >
-                    Regenerate
-                  </button>
-                </div>
-              </div>
-
-              <div className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-800">
-                {generatedPrompt}
-              </div>
-            </div>
-          </>
+      <div id="mosan-chat-messages" role="log" aria-live="polite" className="min-h-[280px] max-h-[56vh] space-y-5 overflow-y-auto bg-[#ece8f7] p-4 sm:p-7">
+        {chatMessages.length === 0 && !generatedPrompt && !generatedImage && (
+          <div className="flex min-h-[200px] flex-col items-center justify-center px-3 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-100 to-purple-200 text-xl font-extrabold text-purple-700">M</div>
+            <h3 className="text-lg font-semibold text-slate-900">What can I help you with?</h3>
+            <p className="mt-2 max-w-md text-sm leading-6 text-slate-600">Write a story, ask a question, create a prompt, translate text, or continue a conversation.</p>
+            <p className="mt-3 text-sm text-slate-500">For example: "Write a Bengali emotional love story."</p>
+          </div>
         )}
 
-        {/* GENERATED IMAGE — SHOWN IN THE SAME WORKSPACE */}
+        {chatMessages.map((message, index) => (
+          <div key={`${message.role}-${index}`} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+            {message.role === "user" ? (
+              <div className="max-w-[92%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md border border-[#c9dff2] bg-[#dceaf8] px-4 py-3 text-sm leading-7 text-slate-800 sm:max-w-[82%]">{message.content}</div>
+            ) : (
+              <div className="w-full max-w-[98%] rounded-2xl rounded-tl-md border border-[#ded7ed] bg-[#f8f5fd] p-4 shadow-sm sm:p-5">
+                <div className="mb-3 flex items-center gap-2 border-b border-[#e8e1f2] pb-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#e5ddf8] text-sm font-bold text-purple-800">M</span>
+                  <strong className="text-sm text-slate-900">Mosan's Response</strong>
+                </div>
+                <div className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-800">{message.content}</div>
+                {message.content === generatedPrompt && (
+                  <div className="mt-4 flex flex-wrap gap-2 border-t border-[#e8e1f2] pt-3">
+                    <button type="button" onClick={copyPrompt} className="rounded-lg border border-[#dcd5ea] bg-[#f0ecf8] px-3 py-2 text-sm text-slate-700 transition hover:bg-[#e8e2f5]">Copy</button>
+                    <button type="button" onClick={savePrompt} className="rounded-lg border border-[#dcd5ea] bg-[#f0ecf8] px-3 py-2 text-sm text-slate-700 transition hover:bg-[#e8e2f5]">Save</button>
+                    <button type="button" disabled={loading} onClick={() => generatePrompt([...chatMessages].slice(0, index + 1).reverse().find((item) => item.role === "user")?.content)} className="rounded-lg border border-[#dcd5ea] bg-[#f0ecf8] px-3 py-2 text-sm text-slate-700 transition hover:bg-[#e8e2f5] disabled:opacity-50">Regenerate</button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+
+        {generatedPrompt && !chatMessages.some((message) => message.role === "assistant" && message.content === generatedPrompt) && (
+          <div className="flex justify-start">
+            <div className="w-full max-w-[98%] rounded-2xl rounded-tl-md border border-[#ded7ed] bg-[#f8f5fd] p-4 shadow-sm sm:p-5">
+              <div className="mb-3 flex items-center gap-2 border-b border-[#e8e1f2] pb-3"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#e5ddf8] text-sm font-bold text-purple-800">M</span><strong className="text-sm text-slate-900">Mosan's Response</strong></div>
+              <div className="whitespace-pre-wrap break-words text-sm leading-7 text-slate-800">{generatedPrompt}</div>
+              <div className="mt-4 flex flex-wrap gap-2 border-t border-[#e8e1f2] pt-3">
+                <button type="button" onClick={copyPrompt} className="rounded-lg border border-[#dcd5ea] bg-[#f0ecf8] px-3 py-2 text-sm text-slate-700 transition hover:bg-[#e8e2f5]">Copy</button>
+                <button type="button" onClick={savePrompt} className="rounded-lg border border-[#dcd5ea] bg-[#f0ecf8] px-3 py-2 text-sm text-slate-700 transition hover:bg-[#e8e2f5]">Save</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {loading && <div className="flex justify-start"><div className="rounded-2xl border border-[#ddd5ef] bg-[#f8f5fd] px-4 py-3 text-sm text-slate-600 shadow-sm">Mosan AI is thinking...</div></div>}
 
         {generatedImage && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
-            <h3 className="mb-4 font-semibold text-slate-900">
-              Generated Image
-            </h3>
-
-            <img
-              src={generatedImage}
-              alt="AI generated image"
-              className="w-full rounded-xl border border-slate-200"
-            />
-
-            <a
-              href={generatedImage}
-              download="mosan-ai-image.png"
-              className="mt-4 inline-flex rounded-xl bg-purple-600 px-5 py-3 font-semibold text-white transition hover:bg-purple-500"
-            >
-              Download Image
-            </a>
+          <div className="flex justify-start">
+            <div className="w-full max-w-[98%] rounded-2xl border border-[#ded7ed] bg-[#f8f5fd] p-4 shadow-sm sm:p-5">
+              <h3 className="mb-3 font-semibold text-slate-900">Created Image</h3>
+              <img src={generatedImage} alt="Mosan AI generated image" className="w-full rounded-xl border border-[#e3dced]" />
+              <a href={generatedImage} download="mosan-ai-image.png" className="mt-4 inline-flex rounded-xl bg-purple-600 px-5 py-3 font-semibold text-white transition hover:bg-purple-500">Download Image</a>
+            </div>
           </div>
         )}
-
-        {!generatedPrompt && !generatedImage && (
-          <div className="rounded-2xl bg-slate-50 px-4 py-12 text-center">
-            <div className="mb-3 text-4xl">✨</div>
-
-            <h3 className="font-semibold text-slate-800">
-              What can I help you with?
-            </h3>
-
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-              Ask a question, write a story, create a script, translate text, or generate an AI prompt.
-            </p>
-          </div>
-        )}
+        <div id="mosan-chat-bottom" />
       </div>
 
-      {/* MESSAGE COMPOSER */}
+      <div className="border-t border-[#e0d9ee] bg-[#f3effa] p-4 sm:p-6">
+        {error && <div className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        {!userEmail && <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Please log in or create a free account before sending a message.</div>}
 
-      <div className="border-t border-slate-100 p-4 sm:p-6">
-        <label
-          htmlFor="mosan-message"
-          className="mb-3 block text-sm font-semibold text-slate-700"
-        >
-          Your Message
-        </label>
+        <textarea value={idea} onChange={(e) => setIdea(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (!loading) void generatePrompt(); } }} placeholder="Ask anything or continue your conversation..." className="min-h-[100px] w-full resize-y rounded-2xl border border-[#d9d4e7] bg-[#faf8ff] p-4 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100" />
 
-        {/* VOICE INPUT */}
-
-        <div className="mb-3 flex flex-wrap items-center gap-3">
-          <label
-            htmlFor="voice-language"
-            className="text-sm text-slate-600"
-          >
-            Voice Language
-          </label>
-
-          <select
-            id="voice-language"
-            value={voiceLanguage}
-            onChange={(e) => setVoiceLanguage(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-cyan-500"
-          >
-            <option value="en-IN">English</option>
-            <option value="bn-IN">Bengali</option>
-            <option value="hi-IN">Hindi</option>
-            <option value="as-IN">Assamese</option>
-            <option value="or-IN">Odia</option>
-            <option value="mr-IN">Marathi</option>
-            <option value="gu-IN">Gujarati</option>
-            <option value="ta-IN">Tamil</option>
-            <option value="te-IN">Telugu</option>
-            <option value="kn-IN">Kannada</option>
-            <option value="ml-IN">Malayalam</option>
-            <option value="pa-IN">Punjabi</option>
-            <option value="ur-IN">Urdu</option>
-          </select>
-
-          <button
-            type="button"
-            onClick={startVoiceInput}
-            disabled={isListening || loading}
-            className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-semibold text-cyan-800 transition hover:bg-cyan-100 disabled:opacity-50"
-          >
-            {isListening ? "Listening..." : "🎤 Speak to Type"}
-          </button>
-        </div>
-
-        <textarea
-          id="mosan-message"
-          value={idea}
-          onChange={(e) => setIdea(e.target.value)}
-          placeholder={
-            generationMode === "answer"
-              ? "Ask anything, write a story, or request a script..."
-              : "Describe the prompt you want to create..."
-          }
-          className="min-h-32 w-full resize-y rounded-2xl border border-slate-200 bg-white p-4 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
-        />
-
-        {/* PROMPT STUDIO OPTIONS */}
-
-        {generationMode === "prompt" && (
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm text-slate-600">
-                Content Type
-              </label>
-
-              <select
-                value={contentType}
-                onChange={(e) => setContentType(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none focus:border-cyan-500"
-              >
-                <option>Image</option>
-                <option>Video</option>
-                <option>Text</option>
-                <option>Story</option>
-                <option>Advertisement</option>
-                <option>Social Media</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm text-slate-600">
-                Style
-              </label>
-
-              <select
-                value={style}
-                onChange={(e) => setStyle(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none focus:border-cyan-500"
-              >
-                <option>Cinematic</option>
-                <option>Realistic</option>
-                <option>Professional</option>
-                <option>Creative</option>
-                <option>Minimal</option>
-                <option>Luxury</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm text-slate-600">
-                Output Language
-              </label>
-
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none focus:border-cyan-500"
-              >
-                <option>English</option>
-                <option>Hindi</option>
-                <option>Bengali</option>
-                <option>Assamese</option>
-                <option>Odia</option>
-                <option>Marathi</option>
-                <option>Gujarati</option>
-                <option>Tamil</option>
-                <option>Telugu</option>
-                <option>Kannada</option>
-                <option>Malayalam</option>
-                <option>Punjabi</option>
-                <option>Urdu</option>
-                <option>Hinglish</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm text-slate-600">
-                Prompt Length
-              </label>
-
-              <select
-                value={promptLength}
-                onChange={(e) => setPromptLength(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 outline-none focus:border-cyan-500"
-              >
-                <option>Short</option>
-                <option>Detailed</option>
-                <option>Very Detailed</option>
-              </select>
-            </div>
-          </div>
-        )}
-
-        {/* FREE PLAN AND LOGIN */}
-
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
-          <span className="text-slate-500">
-            Free generations: <strong className="text-slate-700">3 / day</strong>
-          </span>
-
-          {!userEmail && (
-            <span className="text-amber-700">
-              Please log in to generate content.
-            </span>
-          )}
-        </div>
-
-        {error && (
-          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
-        {/* ACTION BUTTONS */}
-
-        <div className="mt-5 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={generatePrompt}
-            disabled={loading}
-            className="flex-1 rounded-xl bg-cyan-600 px-5 py-3.5 font-bold text-white shadow-sm transition hover:bg-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loading
-              ? "Generating..."
-              : generationMode === "answer"
-                ? "Generate Answer"
-                : "Generate Prompt"}
-          </button>
-
-          <button
-            type="button"
-            onClick={clearAll}
-            className="rounded-xl border border-slate-200 bg-white px-5 py-3.5 font-medium text-slate-700 transition hover:bg-slate-50"
-          >
-            Clear
-          </button>
-        </div>
-
-        {/* IMAGE GENERATION — SAME WORKSPACE */}
-
-        <details
-          id="image-generator"
-          open={Boolean(generatedImage || imageError)}
-          className="mt-5 rounded-2xl border border-purple-200 bg-purple-50/60 p-4"
-        >
-          <summary className="cursor-pointer list-none font-semibold text-purple-800">
-            🖼️ Create Image
-            <span className="ml-2 text-sm font-normal text-purple-600">
-              Generate an image in this workspace
-            </span>
-          </summary>
-
-          <div className="mt-4">
-            <label
-              htmlFor="image-prompt"
-              className="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Image Description
-            </label>
-
-            <textarea
-              id="image-prompt"
-              value={imagePrompt}
-              onChange={(e) => setImagePrompt(e.target.value)}
-              placeholder="Describe the image you want to create..."
-              className="min-h-24 w-full resize-y rounded-xl border border-slate-200 bg-white p-4 text-slate-900 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
-              rows={3}
-              maxLength={2000}
-            />
-
-            <button
-              type="button"
-              onClick={generateImage}
-              disabled={imageLoading}
-              className="mt-3 rounded-xl bg-purple-600 px-5 py-3 font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {imageLoading ? "Generating Image..." : "Generate Image"}
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <select id="voice-language" aria-label="Voice input language" title="Voice input language" value={voiceLanguage} onChange={(e) => setVoiceLanguage(e.target.value)} className="max-w-[125px] rounded-xl border border-[#d9d4e7] bg-[#f8f5fd] px-2 py-2 text-xs text-slate-700 outline-none focus:border-cyan-500">
+              <option value="en-IN">English</option><option value="bn-IN">Bengali</option><option value="hi-IN">Hindi</option><option value="as-IN">Assamese</option><option value="or-IN">Odia</option><option value="mr-IN">Marathi</option><option value="gu-IN">Gujarati</option><option value="ta-IN">Tamil</option><option value="te-IN">Telugu</option><option value="kn-IN">Kannada</option><option value="ml-IN">Malayalam</option><option value="pa-IN">Punjabi</option><option value="ur-IN">Urdu</option>
+            </select>
+            <button type="button" onClick={startVoiceInput} disabled={isListening || loading} aria-label={isListening ? "Listening" : "Voice input"} title={isListening ? "Listening" : "Voice input"} className={`flex h-10 w-10 items-center justify-center rounded-xl border transition disabled:cursor-not-allowed disabled:opacity-50 ${isListening ? "border-cyan-500 bg-cyan-100 text-cyan-800" : "border-[#c8ddec] bg-[#e4f3f8] text-cyan-800 hover:bg-[#d7edf5]"}`}>
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><rect x="9" y="2" width="6" height="12" rx="3" /><path d="M5 10a7 7 0 0 0 14 0" /><path d="M12 17v5" /><path d="M8 22h8" /></svg>
             </button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="hidden text-xs text-slate-500 sm:inline">Enter to send; Shift + Enter for a new line</span>
+            <button type="button" onClick={clearAll} className="rounded-xl border border-[#d9d4e7] bg-[#f8f5fd] px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-[#ece7f7]">Clear chat</button>
+            <button type="button" onClick={() => generatePrompt()} disabled={loading || !idea.trim()} className="rounded-xl bg-gradient-to-r from-cyan-600 to-purple-600 px-5 py-3 text-sm font-bold text-white shadow-md shadow-purple-500/20 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50">{loading ? "Thinking..." : "Send Message"}</button>
+          </div>
+        </div>
 
-            {imagesRemaining !== null && (
-              <p className="mt-3 text-sm text-slate-600">
-                Images remaining this month: {imagesRemaining}
-              </p>
-            )}
-
-            {trialImagesRemainingToday !== null && (
-              <p className="mt-2 text-sm text-slate-600">
-                Trial images remaining today: {trialImagesRemainingToday}
-              </p>
-            )}
-
-            {trialImagesRemainingTotal !== null && (
-              <p className="mt-2 text-sm text-slate-600">
-                Trial images remaining overall: {trialImagesRemainingTotal}
-              </p>
-            )}
-
-            {imageError && (
-              <p className="mt-3 text-sm text-red-600">
-                {imageError}
-              </p>
-            )}
+        <details id="image-generator" open={Boolean(generatedImage || imageError)} className="mt-4 rounded-2xl border border-[#d9d0ef] bg-[#ebe6f8] p-4">
+          <summary className="flex cursor-pointer list-none items-center gap-2 font-semibold text-purple-900">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+            <span>Create Image</span>
+            <span className="ml-auto text-xs font-normal text-purple-700">Open image tools</span>
+          </summary>
+          <div className="mt-4">
+            <label htmlFor="image-prompt-inline" className="mb-2 block text-sm font-medium text-slate-700">Describe the image</label>
+            <textarea id="image-prompt-inline" value={imagePrompt} onChange={(e) => setImagePrompt(e.target.value)} placeholder="Describe the image you want to create..." rows={3} maxLength={2000} className="w-full resize-y rounded-xl border border-[#d9d4e7] bg-[#faf8ff] p-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-purple-400 focus:ring-2 focus:ring-purple-100" />
+            <button type="button" onClick={generateImage} disabled={imageLoading || !imagePrompt.trim()} className="mt-3 rounded-xl bg-purple-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50">{imageLoading ? "Generating image..." : "Generate Image"}</button>
+            {imageError && <p className="mt-3 text-sm text-red-700">{imageError}</p>}
+            {imagesRemaining !== null && <p className="mt-2 text-sm text-slate-600">Images remaining this month: {imagesRemaining}</p>}
+            {trialImagesRemainingToday !== null && <p className="mt-1 text-sm text-slate-600">Trial images remaining today: {trialImagesRemainingToday}</p>}
+            {trialImagesRemainingTotal !== null && <p className="mt-1 text-sm text-slate-600">Trial images remaining overall: {trialImagesRemainingTotal}</p>}
           </div>
         </details>
       </div>
     </div>
   </div>
 </section>
+{/* =====================================================
+          FEATURES SECTION
+      ====================================================== */}
 
       <section
         id="features"
@@ -1852,7 +1563,7 @@ const deletePrompt = async (promptId: string) => {
           <MiniFeature
             icon="💳"
             title="Pro Plan"
-description="Get 30 days of Pro access and renew manually at ₹199 when your plan expires."
+description="Pro includes 30 days of access with manual renewal at ₹199. No automatic renewal."
           />
 
         </div>
@@ -2020,9 +1731,10 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 </li>
               </ul>
 
-              <div className="mt-8 w-full rounded-xl border border-white/10 py-3 text-center text-sm font-medium text-gray-400">
-                Standard Price: ₹199 / 30 Days
-              </div>
+              <button type="button" onClick={() => handleUpgrade()} className="mt-8 w-full rounded-xl bg-cyan-500 py-3.5 font-bold text-black transition hover:bg-cyan-400">
+                Buy Pro — ₹199 / 30 Days
+              </button>
+              <p className="mt-3 text-center text-xs text-gray-400">One-time payment. Manual renewal only. No auto-renewal.</p>
             </div>
 
 
@@ -2034,47 +1746,34 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
 
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-xl font-bold text-white">
-                  Limited Time Offer
+                  ₹1 Image Trial
                 </h3>
 
                 <span className="rounded-full bg-cyan-400 px-3 py-1 text-xs font-bold text-black">
-       LAUNCH OFFER ONLY ₹1           
+       SEPARATE IMAGE TRIAL           
                 </span>
               </div>
 
               <div className="mt-5">
-  <div className="text-sm text-gray-500 line-through">
-    ₹199
-  </div>
-
   <div className="mt-1 text-5xl font-extrabold text-cyan-300">
     ₹1
   </div>
 
                 <div className="mt-2 text-sm font-medium text-gray-300">
-                  for the first 7 days
+                  Image generation for 7 days
                 </div>
               </div>
 
               <p className="mt-4 text-sm leading-6 text-gray-300">
-                Get Mosan AI Pro for just ₹1 for your first 7 days.
+                Get image generation for 7 days. This does not activate Pro.
               </p>
 
               <ul className="mt-8 space-y-4 text-sm text-gray-200">
-                <li>
-                  ✓ Unlimited prompt generation
-                </li>
-
-                <li>
-                  ✓ Advanced prompts
-                </li>
-
-                <li>
-                  ✓ Website access
-                </li>
+                <li>✓ Up to 10 images per day</li>
+                <li>✓ Maximum 50 images over 7 days</li>
+                <li>✓ One-time image trial</li>
                 <li>✓ No automatic renewal</li>
-                <li>✓ First 7 days of full Pro access for ₹1</li>
-                <li>✓ Renew manually at ₹199 for 30 days</li>
+                <li>✓ Pro is purchased separately for ₹199 / 30 days</li>
                 </ul>
 
               <button
@@ -2084,19 +1783,17 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                     return;
                   }
 
-                  handleUpgrade();
+                  void buyImageTrial();
                 }}
                 className="mt-8 w-full rounded-xl bg-cyan-500 py-3.5 font-bold text-black transition hover:bg-cyan-400"
               >
              {!userEmail
-  ? "Get Launch Offer — ₹1"
+  ? "Buy ₹1 Image Trial"
   : !subscriptionChecked
   ? "Checking plan..."
   : isProActive
   ? "Pro Active"
-  : hasSubscriptionRecord
-  ? "Renew Pro — ₹199"
-  : "Get Launch Offer — ₹1"}
+  : "Buy ₹1 Image Trial"}
               </button>
 
               <p className="mt-4 text-center text-xs leading-5 text-gray-400">
@@ -2155,7 +1852,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
 
             <InfoCard
               title="What is the Pro price?"
-              description="Launch Offer: ₹1 for the first 7 days of full Pro access. Manual renewal: ₹199 for 30 days. No automatic renewal."
+              description="₹1 one-time Image Trial for 7 days (up to 50 images). Pro is separate at ₹199 for 30 days with manual renewal only."
             />
 
             <InfoCard
