@@ -283,11 +283,51 @@ const buyImageTrial = async () => {
 
           window.location.reload();
         } catch (err) {
-          setImageError(
-            err instanceof Error
-              ? err.message
-              : "Payment verification failed. Please contact support."
-          );
+          // If signature verification or the browser connection was interrupted,
+          // ask the backend to confirm the captured payment directly with Razorpay.
+          try {
+            const {
+              data: { session: recoverySession },
+            } = await supabase.auth.getSession();
+
+            if (!recoverySession?.access_token) {
+              throw new Error("Please log in again to recover your payment.");
+            }
+
+            const recoveryResponse = await fetch(
+              "https://mosan-ai-backend.onrender.com/api/recover-image-trial-payment",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${recoverySession.access_token}`,
+                },
+                body: JSON.stringify({
+                  razorpay_order_id: paymentResponse.razorpay_order_id,
+                  razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                }),
+              }
+            );
+            const recoveryData = await recoveryResponse.json();
+
+            if (!recoveryResponse.ok || !recoveryData.success) {
+              throw new Error(
+                recoveryData.message ||
+                  "Payment could not be recovered. Please contact support before paying again."
+              );
+            }
+
+            alert(
+              "Image Trial payment recovered and activated! You can generate up to 10 images per day, with a maximum of 50 images over 7 days."
+            );
+            window.location.reload();
+          } catch (recoveryError) {
+            setImageError(
+              recoveryError instanceof Error
+                ? recoveryError.message
+                : "Payment verification failed. If money was deducted, contact support before paying again."
+            );
+          }
         } finally {
           setTrialPaymentLoading(false);
         }
