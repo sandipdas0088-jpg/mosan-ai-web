@@ -1523,7 +1523,7 @@ const deletePrompt = async (promptId: string) => {
           <MiniFeature
             icon="💳"
             title="Pro Plan"
-description="Get 30 days of Pro access and renew manually at ₹199 when your plan expires."
+description="Pro includes 30 days of access with manual renewal at ₹199. No automatic renewal."
           />
 
         </div>
@@ -1673,11 +1673,11 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
 
               <ul className="mt-8 space-y-4 text-sm text-gray-300">
                 <li>
-                  ✓ Up to 10 images per day
+                  ✓ Unlimited prompt generation
                 </li>
 
                 <li>
-                  ✓ Maximum 50 images over 7 days
+                  ✓ Advanced prompts
                 </li>
 
                 <li>
@@ -1691,9 +1691,10 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
                 </li>
               </ul>
 
-              <div className="mt-8 w-full rounded-xl border border-white/10 py-3 text-center text-sm font-medium text-gray-400">
-                Standard Price: ₹199 / 30 Days
-              </div>
+              <button type="button" onClick={() => handleUpgrade()} className="mt-8 w-full rounded-xl bg-cyan-500 py-3.5 font-bold text-black transition hover:bg-cyan-400">
+                Buy Pro — ₹199 / 30 Days
+              </button>
+              <p className="mt-3 text-center text-xs text-gray-400">One-time payment. Manual renewal only. No auto-renewal.</p>
             </div>
 
 
@@ -1705,7 +1706,7 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
 
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-xl font-bold text-white">
-                  Limited Time Offer
+                  ₹1 Image Trial
                 </h3>
 
                 <span className="rounded-full bg-cyan-400 px-3 py-1 text-xs font-bold text-black">
@@ -1714,10 +1715,6 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
               </div>
 
               <div className="mt-5">
-  <div className="text-sm text-gray-500 line-through">
-    ₹199
-  </div>
-
   <div className="mt-1 text-5xl font-extrabold text-cyan-300">
     ₹1
   </div>
@@ -1732,17 +1729,9 @@ description="Get 30 days of Pro access and renew manually at ₹199 when your pl
               </p>
 
               <ul className="mt-8 space-y-4 text-sm text-gray-200">
-                <li>
-                  ✓ Unlimited prompt generation
-                </li>
-
-                <li>
-                  ✓ Advanced prompts
-                </li>
-
-                <li>
-                  ✓ One-time image trial
-                </li>
+                <li>✓ Up to 10 images per day</li>
+                <li>✓ Maximum 50 images over 7 days</li>
+                <li>✓ One-time image trial</li>
                 <li>✓ No automatic renewal</li>
                 <li>✓ Pro is purchased separately for ₹199 / 30 days</li>
                 </ul>
