@@ -46,12 +46,14 @@ export default function RefundCancellationPage() {
               2. Pro Subscription
             </h2>
 
-                        <p>
-              Mosan AI Pro is offered as a one-time payment for 30 days of
-              access. Eligible new users may pay ₹1 for their first 30 days
-              under the launch offer. The standard manual renewal price is
-              ₹199 for each additional 30-day period, unless a different
-              price is clearly displayed during checkout.
+            <p>
+              The ₹1 Image Trial is a separate one-time purchase that provides
+              image generation for 7 days, limited to 10 images per day and
+              50 images in total. It does not activate or extend Pro access.
+            </p>
+            <p className="mt-3">
+              Mosan AI Pro is a separate one-time payment of ₹199 for 30 days.
+              Pro may be renewed manually for another 30-day period at ₹199.
             </p>
             <p className="mt-3">
               Payments do not automatically renew. Pro access expires at
