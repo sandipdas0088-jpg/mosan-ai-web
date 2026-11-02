@@ -176,7 +176,7 @@ const buyImageTrial = async () => {
       throw new Error("Please log in again.");
     }
 
-    // CREATE Γé╣1 TRIAL ORDER
+    // CREATE ₹1 TRIAL ORDER
     const orderResponse = await fetch(
       "https://mosan-ai-backend.onrender.com/api/create-image-trial-order",
       {
@@ -230,7 +230,7 @@ const buyImageTrial = async () => {
       currency: orderData.currency,
       order_id: orderData.order_id,
       name: "Mosan AI",
-      description: "Γé╣1 Image Trial ΓÇö 7 Days, Up to 50 Images",
+      description: "₹1 Image Trial — 7 Days, Up to 50 Images",
       prefill: {
         email: session.user.email || userEmail,
       },
