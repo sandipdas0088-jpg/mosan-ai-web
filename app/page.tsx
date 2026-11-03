@@ -1777,23 +1777,29 @@ description="Pro includes 30 days of access with manual renewal at ₹199. No au
                 </ul>
 
               <button
+                type="button"
+                disabled={trialPaymentLoading || isProActive}
                 onClick={() => {
                   if (!userEmail) {
                     setShowAuthModal(true);
                     return;
                   }
 
+                  if (isProActive) return;
+
                   void buyImageTrial();
                 }}
-                className="mt-8 w-full rounded-xl bg-cyan-500 py-3.5 font-bold text-black transition hover:bg-cyan-400"
+                className="mt-8 w-full rounded-xl bg-cyan-500 py-3.5 font-bold text-black transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
-             {!userEmail
-  ? "Buy ₹1 Image Trial"
-  : !subscriptionChecked
-  ? "Checking plan..."
-  : isProActive
-  ? "Pro Active"
-  : "Buy ₹1 Image Trial"}
+                {!userEmail
+                  ? "Buy ₹1 Image Trial"
+                  : !subscriptionChecked
+                  ? "Checking plan..."
+                  : isProActive
+                  ? "Pro Active — Trial Not Needed"
+                  : trialPaymentLoading
+                  ? "Opening Secure Checkout..."
+                  : "Buy ₹1 Image Trial"}
               </button>
 
               <p className="mt-4 text-center text-xs leading-5 text-gray-400">
